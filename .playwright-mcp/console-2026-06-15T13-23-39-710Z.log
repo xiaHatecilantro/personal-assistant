@@ -1,0 +1,26 @@
+[      68ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
+[   25351ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
+[  131270ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
+[  137173ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
+[  280953ms] [ERROR] Warning: [antd: Card] `bodyStyle` is deprecated. Please use `styles.body` instead. @ http://localhost:5173/@vite/client:524
+[  305295ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/ui/agent-plan.tsx?t=1781530124908:0
+[  305296ms] [ERROR] [vite] Failed to reload /src/components/ui/agent-plan.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5173/@vite/client:524
+[  348526ms] ReferenceError: PlanPage is not defined
+    at App (http://localhost:5173/src/App.tsx?t=1781530168089:80:40)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:7994:27)
+[  348526ms] [WARNING] %s
+
+%s
+ An error occurred in the <App> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524
+[  376100ms] [ERROR] [vite] ReferenceError: ProjectOutlined is not defined
+    at http://localhost:5173/src/components/AppLayout.tsx?t=1781530195726:44:33 @ http://localhost:5173/@vite/client:524
+[  376101ms] [ERROR] [vite] Failed to reload /src/components/AppLayout.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5173/@vite/client:524

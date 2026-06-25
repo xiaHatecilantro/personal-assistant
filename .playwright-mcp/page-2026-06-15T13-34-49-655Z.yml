@@ -1,0 +1,114 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img "schedule" [ref=e8]:
+            - img [ref=e9]
+          - generic [ref=e11]: 个人事务助理
+        - menu [ref=e12]:
+          - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+            - img "dashboard" [ref=e14]:
+              - img [ref=e15]
+            - link "仪表盘" [ref=e18]:
+              - /url: /
+          - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+            - img "check-square" [ref=e20]:
+              - img [ref=e21]
+            - link "任务列表" [ref=e25]:
+              - /url: /tasks
+    - generic [ref=e26]:
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - button "menu-fold" [ref=e29] [cursor=pointer]:
+            - img "menu-fold" [ref=e31]:
+              - img [ref=e32]
+          - navigation [ref=e34]:
+            - list [ref=e35]:
+              - listitem [ref=e36]:
+                - link "首页" [ref=e38] [cursor=pointer]:
+                  - /url: /
+      - main [ref=e39]:
+        - heading "仪表盘" [level=4] [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e45]:
+            - img "file-text" [ref=e47]:
+              - img [ref=e48]
+            - generic [ref=e50]:
+              - text: 总任务数
+              - generic [ref=e51]: "3"
+          - generic [ref=e55]:
+            - img "clock-circle" [ref=e57]:
+              - img [ref=e58]
+            - generic [ref=e61]:
+              - text: 待办中
+              - generic [ref=e62]: "1"
+          - generic [ref=e66]:
+            - img "check-circle" [ref=e68]:
+              - img [ref=e69]
+            - generic [ref=e72]:
+              - text: 已完成
+              - generic [ref=e73]: "1"
+        - generic [ref=e74]:
+          - generic [ref=e76]:
+            - generic [ref=e78]:
+              - generic [ref=e79]: 近 7 天完成趋势
+              - generic [ref=e81]:
+                - generic [ref=e82]: 高 1
+                - generic [ref=e83]: 中 1
+                - generic [ref=e84]: 低 1
+            - application [ref=e88]:
+              - generic [ref=e109]:
+                - generic [ref=e110]:
+                  - generic [ref=e112]: 06-09
+                  - generic [ref=e114]: 06-10
+                  - generic [ref=e116]: 06-11
+                  - generic [ref=e118]: 06-12
+                  - generic [ref=e120]: 06-13
+                  - generic [ref=e122]: 06-14
+                  - generic [ref=e124]: 06-15
+                - generic [ref=e125]:
+                  - generic [ref=e127]: "0"
+                  - generic [ref=e129]: "1"
+                  - generic [ref=e131]: "2"
+                  - generic [ref=e133]: "3"
+                  - generic [ref=e135]: "4"
+          - generic [ref=e137]:
+            - generic [ref=e140]: 任务栏
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e144]:
+                  - img [ref=e145]
+                  - generic [ref=e155]: 进行中
+                  - generic [ref=e156]: (1)
+                - list [ref=e157]:
+                  - listitem [ref=e158]:
+                    - generic [ref=e159]: 复习数据库
+                    - generic [ref=e160]:
+                      - generic [ref=e161]: 短期
+                      - generic [ref=e162]: 高
+                      - generic [ref=e163]: 学习
+              - generic [ref=e164]:
+                - generic [ref=e165]:
+                  - img [ref=e166]
+                  - generic [ref=e168]: 待办
+                  - generic [ref=e169]: (1)
+                - list [ref=e170]:
+                  - listitem [ref=e171]:
+                    - generic [ref=e172]: 跑步
+                    - generic [ref=e173]:
+                      - generic [ref=e174]: 每日
+                      - generic [ref=e175]: 低
+              - generic [ref=e176]:
+                - generic [ref=e177]:
+                  - img [ref=e178]
+                  - generic [ref=e181]: 已完成
+                  - generic [ref=e182]: (1)
+                - list [ref=e183]:
+                  - listitem [ref=e184]:
+                    - generic [ref=e185]: 写完实验报告
+                    - generic [ref=e186]:
+                      - generic [ref=e187]: 短期
+                      - generic [ref=e188]: 中
+                      - generic [ref=e189]: 学习
+  - generic [ref=e190]: "0"

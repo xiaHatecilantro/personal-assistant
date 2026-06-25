@@ -1,0 +1,79 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img "schedule" [ref=e8]:
+            - img [ref=e9]
+          - generic [ref=e11]: 个人事务助理
+        - menu [ref=e12]:
+          - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+            - img "dashboard" [ref=e14]:
+              - img [ref=e15]
+            - link "仪表盘" [ref=e18]:
+              - /url: /
+          - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+            - img "check-square" [ref=e20]:
+              - img [ref=e21]
+            - link "任务列表" [ref=e25]:
+              - /url: /tasks
+          - menuitem "project 实施计划" [ref=e26] [cursor=pointer]:
+            - img "project" [ref=e27]:
+              - img [ref=e28]
+            - link "实施计划" [ref=e31]:
+              - /url: /plan
+    - generic [ref=e32]:
+      - banner [ref=e33]:
+        - generic [ref=e34]:
+          - button "menu-fold" [ref=e35] [cursor=pointer]:
+            - img "menu-fold" [ref=e37]:
+              - img [ref=e38]
+          - navigation [ref=e40]:
+            - list [ref=e41]:
+              - listitem [ref=e42]:
+                - link "首页" [ref=e44] [cursor=pointer]:
+                  - /url: /
+      - main [ref=e45]:
+        - heading "仪表盘" [level=4] [ref=e46]
+        - generic [ref=e47]:
+          - generic [ref=e51]:
+            - img "file-text" [ref=e53]:
+              - img [ref=e54]
+            - generic [ref=e56]:
+              - text: 总任务数
+              - generic [ref=e57]: "0"
+          - generic [ref=e61]:
+            - img "clock-circle" [ref=e63]:
+              - img [ref=e64]
+            - generic [ref=e67]:
+              - text: 待办中
+              - generic [ref=e68]: "0"
+          - generic [ref=e72]:
+            - img "check-circle" [ref=e74]:
+              - img [ref=e75]
+            - generic [ref=e78]:
+              - text: 已完成
+              - generic [ref=e79]: "0"
+        - generic [ref=e80]:
+          - generic [ref=e82]:
+            - generic [ref=e85]: 近 7 天任务完成趋势
+            - application [ref=e89]:
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - generic [ref=e109]: 06-09
+                  - generic [ref=e111]: 06-10
+                  - generic [ref=e113]: 06-11
+                  - generic [ref=e115]: 06-12
+                  - generic [ref=e117]: 06-13
+                  - generic [ref=e119]: 06-14
+                  - generic [ref=e121]: 06-15
+                - generic [ref=e122]:
+                  - generic [ref=e124]: "0"
+                  - generic [ref=e126]: "1"
+                  - generic [ref=e128]: "2"
+                  - generic [ref=e130]: "3"
+                  - generic [ref=e132]: "4"
+          - generic [ref=e134]:
+            - generic [ref=e137]: 优先级分布
+            - generic [ref=e139]: 暂无数据
+  - generic [ref=e140]: "0"

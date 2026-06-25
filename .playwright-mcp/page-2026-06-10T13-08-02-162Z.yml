@@ -1,0 +1,25 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 个人助理
+      - menu [ref=e7]:
+        - menuitem "dashboard 仪表盘" [ref=e8] [cursor=pointer]:
+          - img "dashboard" [ref=e9]:
+            - img [ref=e10]
+          - link "仪表盘" [ref=e13]:
+            - /url: /
+        - menuitem "check-square 任务" [ref=e14] [cursor=pointer]:
+          - img "check-square" [ref=e15]:
+            - img [ref=e16]
+          - link "任务" [active] [ref=e20]:
+            - /url: /tasks
+    - img "left" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+  - generic [ref=e25]:
+    - banner [ref=e26]: 个人事务助理
+    - main [ref=e27]:
+      - generic [ref=e34]:
+        - heading "任务列表" [level=4] [ref=e35]
+        - generic [ref=e36]:
+          - img "No data" [ref=e38]
+          - generic [ref=e49]: 暂无任务

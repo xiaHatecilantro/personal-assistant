@@ -1,0 +1,33 @@
+[      80ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
+[  193728ms] TypeError: tasks is not iterable
+    at TaskBoard (http://localhost:5173/src/components/ui/agent-plan.tsx?t=1781530433545:74:18)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:7994:27)
+[  193727ms] [WARNING] %s
+
+%s
+ An error occurred in the <TaskBoard> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524
+[  194867ms] TypeError: tasks is not iterable
+    at TaskBoard (http://localhost:5173/src/components/ui/agent-plan.tsx?t=1781530433545:74:18)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:7994:27)
+[  194867ms] [WARNING] %s
+
+%s
+ An error occurred in the <TaskBoard> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524

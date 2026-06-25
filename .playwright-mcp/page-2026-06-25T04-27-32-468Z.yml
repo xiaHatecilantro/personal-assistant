@@ -1,0 +1,96 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img "schedule" [ref=e8]:
+            - img [ref=e9]
+          - generic [ref=e11]: 个人事务助理
+        - menu [ref=e12]:
+          - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+            - img "dashboard" [ref=e14]:
+              - img [ref=e15]
+            - link "仪表盘" [ref=e18]:
+              - /url: /
+          - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+            - img "check-square" [ref=e20]:
+              - img [ref=e21]
+            - link "任务列表" [ref=e25]:
+              - /url: /tasks
+          - menuitem "book 知识库" [ref=e26] [cursor=pointer]:
+            - img "book" [ref=e27]:
+              - img [ref=e28]
+            - link "知识库" [ref=e31]:
+              - /url: /notes
+          - menuitem "message AI 对话" [ref=e32] [cursor=pointer]:
+            - img "message" [ref=e33]:
+              - img [ref=e34]
+            - link "AI 对话" [ref=e37]:
+              - /url: /chat
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - button "menu-fold" [ref=e41] [cursor=pointer]:
+            - img "menu-fold" [ref=e43]:
+              - img [ref=e44]
+          - navigation [ref=e46]:
+            - list [ref=e47]:
+              - listitem [ref=e48]:
+                - link "首页" [ref=e50] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e51]: /
+              - listitem [ref=e52]: AI 对话
+        - button "登录" [ref=e55] [cursor=pointer]:
+          - generic [ref=e56]: 登录
+      - main [ref=e57]:
+        - generic [ref=e59]:
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: 工作区
+              - button "folder-add" [ref=e64] [cursor=pointer]:
+                - img "folder-add" [ref=e66]:
+                  - img [ref=e67]
+            - generic [ref=e69]:
+              - generic [ref=e70]: 打开一个文件夹开始工作
+              - button "folder-add 打开文件夹" [ref=e71] [cursor=pointer]:
+                - img "folder-add" [ref=e73]:
+                  - img [ref=e74]
+                - generic [ref=e76]: 打开文件夹
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - generic [ref=e79] [cursor=pointer]:
+                - generic [ref=e80]:
+                  - generic [ref=e81]: DeepSeek V4deepseek
+                  - combobox [ref=e82]
+                - img "down" [ref=e84]:
+                  - img [ref=e85]
+              - generic [ref=e87]:
+                - button "setting" [ref=e88] [cursor=pointer]:
+                  - img "setting" [ref=e90]:
+                    - img [ref=e91]
+                - generic [ref=e93] [cursor=pointer]: 清空
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e99]: 从左侧文件树选择笔记，或直接输入问题
+            - generic [ref=e102]:
+              - textbox "输入问题，Enter 发送" [ref=e103]
+              - button "send" [disabled] [ref=e104]:
+                - generic:
+                  - img "send":
+                    - img
+  - generic [ref=e105]:
+    - dialog "打开文件夹":
+      - generic [ref=e106]:
+        - button "Close" [active] [ref=e107] [cursor=pointer]:
+          - generic "关闭" [ref=e108]:
+            - img "close" [ref=e109]:
+              - img [ref=e110]
+        - generic [ref=e113]: 打开文件夹
+        - generic [ref=e114]:
+          - textbox "输入文件夹路径，如 D:/self-assistant" [ref=e115]
+          - generic [ref=e116]: 支持输入绝对路径，如 D:/self-assistant
+        - generic [ref=e117]:
+          - button "取 消" [ref=e118] [cursor=pointer]:
+            - generic [ref=e119]: 取 消
+          - button "打 开" [ref=e120] [cursor=pointer]:
+            - generic [ref=e121]: 打 开

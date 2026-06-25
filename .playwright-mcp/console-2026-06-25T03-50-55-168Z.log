@@ -1,0 +1,43 @@
+[     177ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:14337
+[    4919ms] [ERROR] Warning: [antd: List] The `List` component is deprecated. And will be removed in next major version. @ http://localhost:5173/@vite/client:524
+[  621301ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/chat:0
+[  755962ms] ReferenceError: NoteTree is not defined
+    at ChatPage (http://localhost:5173/src/pages/ChatPage.tsx?t=1782360211016:83:67)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:7994:27)
+[  755963ms] [WARNING] %s
+
+%s
+ An error occurred in the <ChatPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524
+[  780671ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  781687ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  783699ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  787715ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  805392ms] ReferenceError: useQuery is not defined
+    at ChatPage (http://localhost:5173/src/pages/ChatPage.tsx?t=1782360260481:26:26)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:7994:27)
+[  805392ms] [WARNING] %s
+
+%s
+ An error occurred in the <ChatPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524
+[  822678ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  823699ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  825713ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0
+[  829737ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/api/v1/files/roots:0

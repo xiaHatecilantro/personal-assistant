@@ -1,0 +1,90 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "schedule" [ref=e8]:
+          - img [ref=e9]
+        - generic [ref=e11]: 个人事务助理
+      - menu [ref=e12]:
+        - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+          - img "dashboard" [ref=e14]:
+            - img [ref=e15]
+          - link "仪表盘" [ref=e18]:
+            - /url: /
+        - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+          - img "check-square" [ref=e20]:
+            - img [ref=e21]
+          - link "任务列表" [ref=e25]:
+            - /url: /tasks
+        - menuitem "project 实施计划" [ref=e26] [cursor=pointer]:
+          - img "project" [ref=e27]:
+            - img [ref=e28]
+          - link "实施计划" [ref=e31]:
+            - /url: /plan
+  - generic [ref=e32]:
+    - banner [ref=e33]:
+      - generic [ref=e34]:
+        - button "menu-fold" [ref=e35] [cursor=pointer]:
+          - img "menu-fold" [ref=e37]:
+            - img [ref=e38]
+        - navigation [ref=e40]:
+          - list [ref=e41]:
+            - listitem [ref=e42]:
+              - link "首页" [ref=e44] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e45]: /
+            - listitem [ref=e46]: 任务列表
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - heading "任务列表" [level=4] [ref=e49]
+        - button "plus 新建任务" [ref=e50] [cursor=pointer]:
+          - img "plus" [ref=e52]:
+            - img [ref=e53]
+          - generic [ref=e56]: 新建任务
+      - generic [ref=e57]:
+        - tablist [ref=e58]:
+          - generic [ref=e60]:
+            - tab "短期任务" [ref=e62] [cursor=pointer]
+            - tab "长期任务" [ref=e64] [cursor=pointer]
+            - tab "每日任务" [active] [selected] [ref=e66] [cursor=pointer]
+        - generic:
+          - generic:
+            - tabpanel "每日任务"
+      - table [ref=e75]:
+        - rowgroup [ref=e83]:
+          - row "标题 状态 优先级 标签 计时 操作" [ref=e108]:
+            - columnheader "标题" [ref=e85]
+            - columnheader "状态" [ref=e86]
+            - columnheader "优先级" [ref=e87]
+            - columnheader "标签" [ref=e88]
+            - columnheader "计时" [ref=e109]
+            - columnheader "操作" [ref=e90]
+        - rowgroup [ref=e91]:
+          - row "每日 背单词 待办 高 — -35:00 caret-right reload edit delete" [ref=e110] [cursor=pointer]:
+            - cell "每日 背单词" [ref=e111]:
+              - generic [ref=e112]:
+                - generic [ref=e113]: 每日
+                - text: 背单词
+            - cell "待办" [ref=e114]:
+              - generic [ref=e115]: 待办
+            - cell "高" [ref=e116]:
+              - generic [ref=e117]: 高
+            - cell "—" [ref=e118]
+            - cell "-35:00 caret-right reload" [ref=e119]:
+              - generic [ref=e120]:
+                - generic [ref=e121]: "-35:00"
+                - img [ref=e122]
+                - button "caret-right" [ref=e125]:
+                  - img "caret-right" [ref=e127]:
+                    - img [ref=e128]
+                - button "reload" [ref=e130]:
+                  - img "reload" [ref=e132]:
+                    - img [ref=e133]
+            - cell "edit delete" [ref=e135]:
+              - generic [ref=e136]:
+                - button "edit" [ref=e138]:
+                  - img "edit" [ref=e140]:
+                    - img [ref=e141]
+                - button "delete" [ref=e144]:
+                  - img "delete" [ref=e146]:
+                    - img [ref=e147]

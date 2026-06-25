@@ -1,0 +1,33 @@
+[     200ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:14337
+[  317912ms] ReferenceError: selectedFilePath is not defined
+    at ChatPage (http://localhost:5173/src/pages/ChatPage.tsx?t=1782361900794:94:22)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:7994:27)
+[  317913ms] [WARNING] %s
+
+%s
+ An error occurred in the <ChatPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524
+[  327814ms] ReferenceError: selectedFilePath is not defined
+    at ChatPage (http://localhost:5173/src/pages/ChatPage.tsx?t=1782361910641:93:22)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:12868:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:4213:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:5569:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:6140:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:851:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8429:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8325:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:8309:6)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=f3d5eed3:7994:27)
+[  327813ms] [WARNING] %s
+
+%s
+ An error occurred in the <ChatPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/@vite/client:524

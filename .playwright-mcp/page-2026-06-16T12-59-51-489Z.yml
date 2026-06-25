@@ -1,0 +1,93 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "schedule" [ref=e8]:
+          - img [ref=e9]
+        - generic [ref=e11]: 个人事务助理
+      - menu [ref=e12]:
+        - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+          - img "dashboard" [ref=e14]:
+            - img [ref=e15]
+          - link "仪表盘" [ref=e18]:
+            - /url: /
+        - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+          - img "check-square" [ref=e20]:
+            - img [ref=e21]
+          - link "任务列表" [ref=e25]:
+            - /url: /tasks
+  - generic [ref=e26]:
+    - banner [ref=e27]:
+      - generic [ref=e28]:
+        - button "menu-fold" [ref=e29] [cursor=pointer]:
+          - img "menu-fold" [ref=e31]:
+            - img [ref=e32]
+        - navigation [ref=e34]:
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "首页" [ref=e38] [cursor=pointer]:
+                - /url: /
+      - button "登录" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 登录
+    - main [ref=e43]:
+      - heading "仪表盘" [level=4] [ref=e44]
+      - generic [ref=e45]:
+        - generic [ref=e49]:
+          - img "file-text" [ref=e51]:
+            - img [ref=e52]
+          - generic [ref=e54]:
+            - text: 总任务数
+            - generic [ref=e55]: "1"
+        - generic [ref=e59]:
+          - img "clock-circle" [ref=e61]:
+            - img [ref=e62]
+          - generic [ref=e65]:
+            - text: 待办中
+            - generic [ref=e66]: "0"
+        - generic [ref=e70]:
+          - img "check-circle" [ref=e72]:
+            - img [ref=e73]
+          - generic [ref=e76]:
+            - text: 已完成
+            - generic [ref=e77]: "0"
+      - generic [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: 近 7 天完成趋势
+            - generic [ref=e86]: 高 1
+          - list [ref=e90]:
+            - listitem [ref=e91]
+            - listitem [ref=e92]
+            - listitem [ref=e93]
+            - listitem [ref=e94]
+        - generic [ref=e96]:
+          - generic [ref=e99]: 任务栏
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103] [cursor=pointer]:
+                - img [ref=e104]
+                - generic [ref=e114]: 进行中
+                - generic [ref=e115]: (1)
+                - img [ref=e117]
+              - list [ref=e120]:
+                - listitem [ref=e121]:
+                  - generic [ref=e122] [cursor=pointer]:
+                    - generic [ref=e123]: 学会 Docker
+                    - generic [ref=e124]:
+                      - generic [ref=e125]: 长期
+                      - generic [ref=e126]: 高
+                      - img [ref=e128]
+            - generic [ref=e130]:
+              - generic [ref=e131] [cursor=pointer]:
+                - img [ref=e132]
+                - generic [ref=e134]: 待办
+                - generic [ref=e135]: (0)
+                - img [ref=e137]
+              - paragraph [ref=e140]: 点击上方「新建任务」添加
+            - generic [ref=e141]:
+              - generic [ref=e142] [cursor=pointer]:
+                - img [ref=e143]
+                - generic [ref=e146]: 已完成
+                - generic [ref=e147]: (0)
+                - img [ref=e149]
+              - paragraph [ref=e152]: 将任务标记为「已完成」

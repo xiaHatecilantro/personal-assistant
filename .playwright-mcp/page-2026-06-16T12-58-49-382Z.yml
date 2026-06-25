@@ -1,0 +1,81 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "schedule" [ref=e8]:
+          - img [ref=e9]
+        - generic [ref=e11]: 个人事务助理
+      - menu [ref=e12]:
+        - menuitem "dashboard 仪表盘" [ref=e13] [cursor=pointer]:
+          - img "dashboard" [ref=e14]:
+            - img [ref=e15]
+          - link "仪表盘" [ref=e18]:
+            - /url: /
+        - menuitem "check-square 任务列表" [ref=e19] [cursor=pointer]:
+          - img "check-square" [ref=e20]:
+            - img [ref=e21]
+          - link "任务列表" [ref=e25]:
+            - /url: /tasks
+  - generic [ref=e26]:
+    - banner [ref=e27]:
+      - generic [ref=e28]:
+        - button "menu-fold" [ref=e29] [cursor=pointer]:
+          - img "menu-fold" [ref=e31]:
+            - img [ref=e32]
+        - navigation [ref=e34]:
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "首页" [ref=e38] [cursor=pointer]:
+                - /url: /
+      - button "登录" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 登录
+    - main [ref=e43]:
+      - heading "仪表盘" [level=4] [ref=e44]
+      - generic [ref=e45]:
+        - list [ref=e51]:
+          - listitem [ref=e52]
+          - listitem [ref=e53]
+          - listitem [ref=e54]
+          - listitem [ref=e55]
+        - list [ref=e61]:
+          - listitem [ref=e62]
+          - listitem [ref=e63]
+          - listitem [ref=e64]
+          - listitem [ref=e65]
+        - list [ref=e71]:
+          - listitem [ref=e72]
+          - listitem [ref=e73]
+          - listitem [ref=e74]
+          - listitem [ref=e75]
+      - generic [ref=e76]:
+        - generic [ref=e78]:
+          - generic [ref=e81]: 近 7 天完成趋势
+          - list [ref=e85]:
+            - listitem [ref=e86]
+            - listitem [ref=e87]
+            - listitem [ref=e88]
+            - listitem [ref=e89]
+        - generic [ref=e91]:
+          - generic [ref=e94]: 任务栏
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e98] [cursor=pointer]:
+                - img [ref=e99]
+                - generic [ref=e109]: 进行中
+                - generic [ref=e110]: (0)
+                - img [ref=e112]
+              - paragraph [ref=e115]: 将任务状态改为「进行中」
+            - generic [ref=e116]:
+              - generic [ref=e117] [cursor=pointer]:
+                - img [ref=e118]
+                - generic [ref=e120]: 待办
+                - generic [ref=e121]: (0)
+                - img [ref=e123]
+              - paragraph [ref=e126]: 点击上方「新建任务」添加
+            - generic [ref=e127]:
+              - generic [ref=e128] [cursor=pointer]:
+                - img [ref=e129]
+                - generic [ref=e132]: 已完成
+                - generic [ref=e133]: (0)
+                - img [ref=e135]
+              - paragraph [ref=e138]: 将任务标记为「已完成」
