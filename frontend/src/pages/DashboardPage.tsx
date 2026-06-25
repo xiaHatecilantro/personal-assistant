@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, Col, Row, Tag, Typography } from "antd";
+import { Card, Col, Row, Skeleton, Tag, Typography } from "antd";
 import {
   Line,
   LineChart,
@@ -64,12 +64,12 @@ export default function DashboardPage() {
         仪表盘
       </Typography.Title>
 
-      {/* 统计区 — 一行三列数字，克制无装饰 */}
+      {/* 统计区 */}
       <Row gutter={[24, 16]} style={{ marginBottom: 8 }}>
         {[
-          { label: "总任务", value: overview?.total ?? 0, color: "#1677ff" },
-          { label: "待办", value: overview?.by_status.todo ?? 0, color: "#faad14" },
-          { label: "已完成", value: overview?.by_status.done ?? 0, color: "#52c41a" },
+          { label: "总任务", value: overview?.total, color: "#1677ff" },
+          { label: "待办", value: overview?.by_status?.todo, color: "#faad14" },
+          { label: "已完成", value: overview?.by_status?.done, color: "#52c41a" },
         ].map((s, i) => (
           <Col xs={24} sm={8} key={s.label}>
             <motion.div
@@ -78,14 +78,18 @@ export default function DashboardPage() {
               transition={{ duration: 0.35, delay: i * 0.08, ease: [0.25, 1, 0.5, 1] }}
               style={{ display: "flex", alignItems: "baseline", gap: 6 }}
             >
-              <motion.span
-                style={{ fontSize: 36, fontWeight: 700, color: s.color, lineHeight: 1 }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: i * 0.08 + 0.1, ease: [0.34, 1.56, 0.64, 1] }}
-              >
-                {s.value}
-              </motion.span>
+              {s.value !== undefined ? (
+                <motion.span
+                  style={{ fontSize: 36, fontWeight: 700, color: s.color, lineHeight: 1 }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 + 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                >
+                  {s.value}
+                </motion.span>
+              ) : (
+                <Skeleton.Input active size="small" style={{ width: 48, height: 36 }} />
+              )}
               <span style={{ fontSize: 14, color: "#8c8c8c" }}>{s.label}</span>
             </motion.div>
           </Col>

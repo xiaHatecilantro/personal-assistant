@@ -10,34 +10,20 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Breadcrumb, Button, Dropdown, Layout, Menu, Space, theme } from "antd";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { ThemeSwitch } from "@lobehub/ui";
 import { useAuthStore } from "../store/authStore";
+import { ThemeModeContext } from "../App";
 
 const { Sider, Content, Header } = Layout;
 
 const menuItems = [
-  {
-    key: "/",
-    icon: <DashboardOutlined />,
-    label: <Link to="/">仪表盘</Link>,
-  },
-  {
-    key: "/tasks",
-    icon: <CheckSquareOutlined />,
-    label: <Link to="/tasks">任务列表</Link>,
-  },
-  {
-    key: "/notes",
-    icon: <BookOutlined />,
-    label: <Link to="/notes">知识库</Link>,
-  },
-  {
-    key: "/chat",
-    icon: <MessageOutlined />,
-    label: <Link to="/chat">AI 对话</Link>,
-  },
+  { key: "/", icon: <DashboardOutlined />, label: <Link to="/">仪表盘</Link> },
+  { key: "/tasks", icon: <CheckSquareOutlined />, label: <Link to="/tasks">任务列表</Link> },
+  { key: "/notes", icon: <BookOutlined />, label: <Link to="/notes">知识库</Link> },
+  { key: "/chat", icon: <MessageOutlined />, label: <Link to="/chat">AI 对话</Link> },
 ];
 
 const breadcrumbMap: Record<string, string> = {
@@ -55,6 +41,8 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { token } = theme.useToken();
   const { user, logout } = useAuthStore();
+  const { themeMode, setThemeMode } = useContext(ThemeModeContext);
+  const isDark = themeMode === "dark";
 
   const pathSnippets = location.pathname.split("/").filter((i) => i);
   const breadcrumbItems = [
@@ -77,7 +65,6 @@ export default function AppLayout() {
           borderRight: `1px solid ${token.colorBorderSecondary}`,
         }}
       >
-        {/* Logo */}
         <div
           style={{
             height: 64,
@@ -104,7 +91,6 @@ export default function AppLayout() {
             </span>
           )}
         </div>
-
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
@@ -114,16 +100,23 @@ export default function AppLayout() {
       </Sider>
 
       <Layout>
-        {/* Header with breadcrumb */}
+        {/* Glass header */}
         <Header
           style={{
-            background: token.colorBgContainer,
+            background: isDark
+              ? "rgba(20,20,20,0.72)"
+              : "rgba(255,255,255,0.72)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             padding: "0 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             height: 56,
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -136,6 +129,10 @@ export default function AppLayout() {
             <Breadcrumb items={breadcrumbItems} />
           </div>
           <Space>
+            <ThemeSwitch
+              themeMode={themeMode}
+              onThemeSwitch={setThemeMode}
+            />
             {user ? (
               <Dropdown
                 menu={{

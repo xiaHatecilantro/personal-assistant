@@ -19,10 +19,22 @@ body {
 
 /* ── global micro-interactions ── */
 
-/* smooth hover scale for clickable elements */
+/* button hover float */
+.ant-btn:not(.ant-btn-loading):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
 .ant-btn:not(.ant-btn-loading):active {
   transform: scale(0.97);
   transition: transform 0.1s ease;
+}
+
+/* card hover float */
+.ant-card:not(.ant-card-loading):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* smooth tab indicator */
@@ -30,11 +42,33 @@ body {
   transition: left 0.25s cubic-bezier(0.25, 1, 0.5, 1), width 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
+/* menu item transition */
+.ant-menu-item,
+.ant-menu-submenu-title {
+  transition: background 0.15s ease !important;
+}
+
 /* focus ring */
 *:focus-visible {
   outline: 2px solid #1677ff;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* scrollbar refinement */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* reduced motion */

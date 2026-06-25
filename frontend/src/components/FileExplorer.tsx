@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Typography } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
 interface FSNode {
@@ -131,9 +132,27 @@ function TreeNode({
           {node.name}
         </Typography.Text>
       </div>
-      {isOpen && node.children?.map((c) => (
-        <TreeNode key={`${fullKey}/${c.name}`} node={c} depth={depth + 1} onSelectFile={onSelectFile} expanded={expanded} onToggle={onToggle} activeFileName={activeFileName} />
-      ))}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+          >
+            {node.children?.map((c, i) => (
+              <motion.div
+                key={`${fullKey}/${c.name}`}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.15, delay: i * 0.02, ease: [0.25, 1, 0.5, 1] }}
+              >
+                <TreeNode node={c} depth={depth + 1} onSelectFile={onSelectFile} expanded={expanded} onToggle={onToggle} activeFileName={activeFileName} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

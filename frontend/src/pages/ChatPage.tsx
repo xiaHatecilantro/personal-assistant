@@ -8,6 +8,7 @@ import {
 import { Button, Select, Typography } from "antd";
 import { ChatItem, ChatInputArea } from "@lobehub/ui/chat";
 import { useState, useCallback, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { streamChat } from "../api/chat";
 import { useModelStore } from "../store/modelStore";
 import ModelSettings from "../components/ModelSettings";
@@ -22,6 +23,27 @@ interface Message {
 
 const fmt = () =>
   new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+
+/** 呼吸灯 — AI 思考中的三点跳跃动画 */
+function BreathingDots() {
+  return (
+    <div style={{ display: "flex", gap: 4, paddingLeft: 62 }}>
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          style={{ width: 6, height: 6, borderRadius: "50%", background: "#1677ff" }}
+          animate={{ opacity: [0.25, 1, 0.25], scale: [0.8, 1.2, 0.8] }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function ChatPage() {
   const [input, setInput] = useState("");
@@ -200,26 +222,39 @@ export default function ChatPage() {
             </div>
           ) : (
             messages.map((msg) => (
-              <ChatItem
+              <motion.div
                 key={msg.id}
-                avatar={msg.role === "user"
-                  ? { avatar: <UserOutlined />, title: "你" }
-                  : { avatar: <RobotOutlined />, title: "AI" }}
-                message={msg.content}
-                placement={msg.role === "user" ? "right" : "left"}
-                showTitle
-              />
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+              >
+                <ChatItem
+                  avatar={msg.role === "user"
+                    ? { avatar: <UserOutlined />, title: "你" }
+                    : { avatar: <RobotOutlined />, title: "AI" }}
+                  message={msg.content}
+                  placement={msg.role === "user" ? "right" : "left"}
+                  showTitle
+                />
+              </motion.div>
             ))
           )}
 
-          {loading && (
-            <ChatItem
-              avatar={{ avatar: <RobotOutlined />, title: "AI" }}
-              message=""
-              placement="left"
-              loading
-              showTitle
-            />
+          {loading && messages[messages.length - 1]?.role === "user" && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+            >
+              <ChatItem
+                avatar={{ avatar: <RobotOutlined />, title: "AI" }}
+                message=""
+                placement="left"
+                loading
+                showTitle
+              />
+              <BreathingDots />
+            </motion.div>
           )}
         </div>
 
@@ -231,27 +266,33 @@ export default function ChatPage() {
             background: "#fff",
           }}
         >
-          {selectedFileName && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 8,
-                padding: "4px 10px",
-                background: "#e6f4ff",
-                borderRadius: 6,
-                fontSize: 12,
-                color: "#1677ff",
-              }}
-            >
-              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {selectedFileName}
-              </span>
-              <Button type="text" size="small" icon={<DeleteOutlined />} onClick={clearFile}
-                style={{ color: "#999", fontSize: 12 }} />
-            </div>
-          )}
+          <AnimatePresence>
+            {selectedFileName && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: "auto", marginBottom: 8 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  background: "#e6f4ff",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  color: "#1677ff",
+                  overflow: "hidden",
+                }}
+              >
+                <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {selectedFileName}
+                </span>
+                <Button type="text" size="small" icon={<DeleteOutlined />} onClick={clearFile}
+                  style={{ color: "#999", fontSize: 12 }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
           <ChatInputArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
