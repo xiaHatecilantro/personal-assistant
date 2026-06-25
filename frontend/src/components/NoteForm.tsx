@@ -54,7 +54,7 @@ export default function NoteForm({ initialValues, onSubmit, onCancel, loading }:
         is_pinned: false,
         content: "",
       }}
-      style={{ maxWidth: 720 }}
+      style={{ maxWidth: 720, background: "#fff", borderRadius: 20, border: "1px solid #f0f0f0", padding: "28px 28px 12px" }}
     >
       <Form.Item
         name="title"
@@ -122,10 +122,10 @@ export default function NoteForm({ initialValues, onSubmit, onCancel, loading }:
 
       <Form.Item style={{ marginTop: 16 }}>
         <Space>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 10 }}>
             {initialValues?.title ? "保存修改" : "创建笔记"}
           </Button>
-          <Button onClick={onCancel}>取消</Button>
+          <Button onClick={onCancel} style={{ borderRadius: 10 }}>取消</Button>
         </Space>
       </Form.Item>
     </Form>

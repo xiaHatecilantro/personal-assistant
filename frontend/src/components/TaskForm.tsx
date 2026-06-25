@@ -62,7 +62,7 @@ export default function TaskForm({ initialValues, initialSubtasks, onSubmit, onC
         status: "todo",
         subtasks: [],
       }}
-      style={{ maxWidth: 560 }}
+      style={{ maxWidth: 560, background: "#fff", borderRadius: 20, border: "1px solid #f0f0f0", padding: "28px 28px 12px" }}
     >
       <Form.Item
         name="title"
@@ -186,10 +186,10 @@ export default function TaskForm({ initialValues, initialSubtasks, onSubmit, onC
 
       <Form.Item style={{ marginTop: 8 }}>
         <Space>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={loading} style={{ borderRadius: 10 }}>
             {initialValues ? "保存修改" : "创建任务"}
           </Button>
-          <Button onClick={onCancel}>取消</Button>
+          <Button onClick={onCancel} style={{ borderRadius: 10 }}>取消</Button>
         </Space>
       </Form.Item>
     </Form>
