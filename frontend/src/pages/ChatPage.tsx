@@ -75,13 +75,7 @@ export default function ChatPage() {
     setLoading(true);
 
     const assistantId = (Date.now() + 1).toString();
-    const assistantMsg: Message = {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      time: fmt(),
-    };
-    setMessages((prev) => [...prev, assistantMsg]);
+    let msgAdded = false;
 
     try {
       let content = "";
@@ -90,23 +84,26 @@ export default function ChatPage() {
         fileContent: selectedFileContent || undefined,
         filePath: selectedFileName || undefined,
       })) {
-        content += token;
+        if (!msgAdded) {
+          setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: token, time: fmt() }]);
+          msgAdded = true;
+        } else {
+          content += token;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content } : m)),
+          );
+        }
+      }
+      if (!msgAdded) {
+        setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "", time: fmt() }]);
+      } else {
         setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, content } : m)),
+          prev.map((m) => (m.id === assistantId ? { ...m, time: fmt() } : m)),
         );
       }
-      setMessages((prev) =>
-        prev.map((m) => (m.id === assistantId ? { ...m, time: fmt() } : m)),
-      );
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : String(e);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, content: `请求失败: ${errMsg}`, time: fmt() }
-            : m,
-        ),
-      );
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: `请求失败: ${errMsg}`, time: fmt() }]);
     } finally {
       setLoading(false);
     }
@@ -240,7 +237,7 @@ export default function ChatPage() {
             ))
           )}
 
-          {loading && messages[messages.length - 1]?.role === "user" && (
+          {loading && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -295,7 +292,6 @@ export default function ChatPage() {
           </AnimatePresence>
           <ChatInputArea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
             onInput={setInput}
             onSend={send}
             loading={loading}
