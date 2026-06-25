@@ -125,7 +125,7 @@ export default function AppLayout() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "10px 20px",
+          padding: "12px 32px",
           flexShrink: 0,
         }}
       >
@@ -175,7 +175,7 @@ export default function AppLayout() {
           display: "flex",
           flexDirection: "column",
           minHeight: 0,
-          padding: "0 16px 100px",
+          padding: "0 32px 100px",
           overflow: "auto",
         }}
       >
