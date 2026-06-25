@@ -128,7 +128,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 138px)" }}>
+    <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
       {/* === LEFT: file tree === */}
       <div
         style={{

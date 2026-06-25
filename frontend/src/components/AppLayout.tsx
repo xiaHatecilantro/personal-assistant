@@ -2,190 +2,277 @@ import {
   BookOutlined,
   CheckSquareOutlined,
   DashboardOutlined,
-  MessageOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  ScheduleOutlined,
+  MessageOutlined,
+  PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Breadcrumb, Button, Dropdown, Layout, Menu, Space, theme } from "antd";
-import { useState, useContext } from "react";
+import { Button, Dropdown } from "antd";
+import { useContext, useMemo } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitch } from "@lobehub/ui";
 import { useAuthStore } from "../store/authStore";
 import { ThemeModeContext } from "../App";
 
-const { Sider, Content, Header } = Layout;
+/* ── 底部 Tab 定义 ── */
 
-const menuItems = [
-  { key: "/", icon: <DashboardOutlined />, label: <Link to="/">仪表盘</Link> },
-  { key: "/tasks", icon: <CheckSquareOutlined />, label: <Link to="/tasks">任务列表</Link> },
-  { key: "/notes", icon: <BookOutlined />, label: <Link to="/notes">知识库</Link> },
-  { key: "/chat", icon: <MessageOutlined />, label: <Link to="/chat">AI 对话</Link> },
+const tabs = [
+  { path: "/", label: "首页", icon: DashboardOutlined },
+  { path: "/chat", label: "对话", icon: MessageOutlined },
+  { path: "/notes", label: "知识库", icon: BookOutlined },
+  { path: "/tasks", label: "任务", icon: CheckSquareOutlined },
 ];
 
-const breadcrumbMap: Record<string, string> = {
-  "/": "仪表盘",
-  "/tasks": "任务列表",
-  "/tasks/new": "新建任务",
-  "/notes": "知识库",
-  "/notes/new": "新建笔记",
-  "/chat": "AI 对话",
-};
+/* ── 根据时段生成问候语 ── */
+
+function greet() {
+  const h = new Date().getHours();
+  if (h < 6) return "夜深了";
+  if (h < 9) return "早上好";
+  if (h < 12) return "上午好";
+  if (h < 14) return "中午好";
+  if (h < 18) return "下午好";
+  return "晚上好";
+}
+
+const todayStr = () =>
+  new Date().toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  });
+
+/* ── 悬浮 + 按钮 ── */
+
+function FloatingAdd() {
+  const navigate = useNavigate();
+  return (
+    <Dropdown
+      trigger={["click"]}
+      placement="top"
+      menu={{
+        items: [
+          { key: "task", icon: <CheckSquareOutlined />, label: "新建任务", onClick: () => navigate("/tasks/new") },
+          { key: "note", icon: <BookOutlined />, label: "新建笔记", onClick: () => navigate("/notes/new") },
+        ],
+      }}
+    >
+      <button
+        style={{
+          width: 52,
+          height: 52,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #1677ff, #4096ff)",
+          border: "none",
+          boxShadow: "0 4px 20px rgba(22,119,255,0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          transition: "transform 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(22,119,255,0.45)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(22,119,255,0.35)";
+        }}
+      >
+        <PlusOutlined style={{ fontSize: 22, color: "#fff" }} />
+      </button>
+    </Dropdown>
+  );
+}
+
+/* ═══════════════════════════════════════════ */
 
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { token } = theme.useToken();
   const { user, logout } = useAuthStore();
   const { themeMode, setThemeMode } = useContext(ThemeModeContext);
   const isDark = themeMode === "dark";
 
-  const pathSnippets = location.pathname.split("/").filter((i) => i);
-  const breadcrumbItems = [
-    { title: <Link to="/">首页</Link> },
-    ...pathSnippets.map((_, index) => {
-      const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-      return { title: breadcrumbMap[url] || url };
-    }),
-  ];
+  const pageTitle = useMemo(() => {
+    for (const t of tabs) {
+      if (t.path === "/") continue;
+      if (location.pathname.startsWith(t.path)) return t.label;
+    }
+    return "首页";
+  }, [location.pathname]);
+
+  const showFAB = location.pathname === "/" || location.pathname === "/tasks";
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={220}
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: isDark
+          ? "linear-gradient(180deg, #0d1117 0%, #161b22 100%)"
+          : "linear-gradient(180deg, #f0f5ff 0%, #fafafa 40%, #fff 100%)",
+        transition: "background 0.3s",
+      }}
+    >
+      {/* ── 顶部栏 ── */}
+      <header
         style={{
-          background: token.colorBgContainer,
-          borderRight: `1px solid ${token.colorBorderSecondary}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 20px",
+          flexShrink: 0,
         }}
       >
-        <div
-          style={{
-            height: 64,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderBottom: `1px solid ${token.colorBorderSecondary}`,
-          }}
-        >
-          <ScheduleOutlined
-            style={{ fontSize: collapsed ? 22 : 28, color: token.colorPrimary }}
-          />
-          {!collapsed && (
-            <span
-              style={{
-                marginLeft: 10,
-                fontSize: 17,
-                fontWeight: 600,
-                color: token.colorTextHeading,
-                whiteSpace: "nowrap",
+        {/* 问候 + 日期 */}
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: isDark ? "#e6edf3" : "#1a1a1a", lineHeight: 1.3 }}>
+            {greet()}，{user?.username || "朋友"}
+          </div>
+          <div style={{ fontSize: 12, color: isDark ? "#8b949e" : "#999", marginTop: 2 }}>
+            {todayStr()}
+          </div>
+        </div>
+
+        {/* 右侧操作 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <ThemeSwitch themeMode={themeMode} onThemeSwitch={setThemeMode} />
+          {user ? (
+            <Dropdown
+              menu={{
+                items: [
+                  { key: "username", label: user.username, disabled: true },
+                  { type: "divider" },
+                  {
+                    key: "logout",
+                    icon: <LogoutOutlined />,
+                    label: "退出登录",
+                    danger: true,
+                    onClick: () => { logout(); navigate("/login"); },
+                  },
+                ],
               }}
             >
-              个人事务助理
-            </span>
+              <Button type="text" shape="circle" icon={<UserOutlined />} />
+            </Dropdown>
+          ) : (
+            <Button type="link" onClick={() => navigate("/login")}>
+              登录
+            </Button>
           )}
         </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          style={{ border: "none", marginTop: 4 }}
-        />
-      </Sider>
+      </header>
 
-      <Layout>
-        {/* Glass header */}
-        <Header
-          style={{
-            background: isDark
-              ? "rgba(20,20,20,0.72)"
-              : "rgba(255,255,255,0.72)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            padding: "0 24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            height: 56,
-            borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: 16, width: 40, height: 40 }}
-            />
-            <Breadcrumb items={breadcrumbItems} />
-          </div>
-          <Space>
-            <ThemeSwitch
-              themeMode={themeMode}
-              onThemeSwitch={setThemeMode}
-            />
-            {user ? (
-              <Dropdown
-                menu={{
-                  items: [
-                    { key: "username", label: user.username, disabled: true },
-                    { type: "divider" },
-                    {
-                      key: "logout",
-                      icon: <LogoutOutlined />,
-                      label: "退出登录",
-                      onClick: () => {
-                        logout();
-                        navigate("/login");
-                      },
-                    },
-                  ],
+      {/* ── 内容区 ── */}
+      <main
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          padding: "0 16px 100px",
+          overflow: "auto",
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {/* ── 悬浮 + 按钮 ── */}
+      {showFAB && (
+        <div style={{ position: "fixed", bottom: 88, right: 24, zIndex: 50 }}>
+          <FloatingAdd />
+        </div>
+      )}
+
+      {/* ── 底部 TabBar ── */}
+      <nav
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 64,
+          background: isDark
+            ? "rgba(22,27,34,0.88)"
+            : "rgba(255,255,255,0.88)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          paddingBottom: "env(safe-area-inset-bottom, 0)",
+          zIndex: 40,
+        }}
+      >
+        {tabs.map((t) => {
+          const active = t.path === "/" ? location.pathname === "/" : location.pathname.startsWith(t.path);
+          const Icon = t.icon;
+          return (
+            <Link
+              key={t.path}
+              to={t.path}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 3,
+                textDecoration: "none",
+                minWidth: 56,
+              }}
+            >
+              <motion.div
+                animate={{
+                  scale: active ? 1.1 : 1,
+                  color: active ? "#1677ff" : isDark ? "#8b949e" : "#999",
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                style={{ display: "flex" }}
+              >
+                <Icon style={{ fontSize: 22 }} />
+              </motion.div>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: active ? 600 : 400,
+                  color: active ? "#1677ff" : isDark ? "#8b949e" : "#999",
+                  transition: "color 0.2s",
                 }}
               >
-                <Button type="text" icon={<UserOutlined />}>
-                  {user.username}
-                </Button>
-              </Dropdown>
-            ) : (
-              <Button type="link" onClick={() => navigate("/login")}>
-                登录
-              </Button>
-            )}
-          </Space>
-        </Header>
-
-        <Content
-          style={{
-            margin: 24,
-            padding: 24,
-            background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,
-            minHeight: 280,
-          }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
-              style={{ height: "100%" }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
-        </Content>
-      </Layout>
-    </Layout>
+                {t.label}
+              </span>
+              {active && (
+                <motion.div
+                  layoutId="tab-indicator"
+                  style={{
+                    width: 20,
+                    height: 3,
+                    borderRadius: 2,
+                    background: "#1677ff",
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
