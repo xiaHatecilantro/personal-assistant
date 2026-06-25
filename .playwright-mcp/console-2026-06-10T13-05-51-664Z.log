@@ -1,4 +1,0 @@
-[     492ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=9a080aa1:14337
-[    8391ms] [ERROR] Warning: [antd: List] The `List` component is deprecated. And will be removed in next major version. @ http://localhost:5173/@vite/client:524
-[  375608ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=9a080aa1:14337
-[  375761ms] [ERROR] Warning: [antd: List] The `List` component is deprecated. And will be removed in next major version. @ http://localhost:5173/@vite/client:524

@@ -1,2 +1,0 @@
-[      61ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/client-C839dZfX.js?v=959ee83b:14337
-[     215ms] [ERROR] Warning: [antd: Card] `bodyStyle` is deprecated. Please use `styles.body` instead. @ http://localhost:5173/@vite/client:524
