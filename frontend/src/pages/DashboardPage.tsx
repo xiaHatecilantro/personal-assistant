@@ -145,7 +145,7 @@ export default function DashboardPage() {
     .slice(0, 5);
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 0 0" }}>
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "16px 0 0", height: "100%", overflow: "auto" }}>
 
       {/* ── 三张统计卡 ── */}
       <div style={{ display: "flex", gap: 24 }}>

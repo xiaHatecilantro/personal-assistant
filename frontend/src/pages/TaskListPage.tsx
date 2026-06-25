@@ -121,7 +121,7 @@ export default function TaskListPage() {
   const tasks = allTasks || [];
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 8 }}>
+    <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}>
       {/* 顶部 */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <Segmented

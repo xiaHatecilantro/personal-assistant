@@ -106,7 +106,7 @@ export default function NotesListPage() {
   });
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", paddingTop: 8 }}>
+    <div style={{ maxWidth: 960, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}>
       {/* 顶部 */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div style={{ display: "flex", gap: 12, flex: 1 }}>

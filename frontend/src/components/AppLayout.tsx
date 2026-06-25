@@ -176,7 +176,6 @@ export default function AppLayout() {
           flexDirection: "column",
           minHeight: 0,
           padding: "0 32px 100px",
-          overflow: "auto",
         }}
       >
         <AnimatePresence mode="wait">

@@ -28,7 +28,7 @@ export default function NoteCreatePage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-      style={{ maxWidth: 680, margin: "0 auto", paddingTop: 8 }}
+      style={{ maxWidth: 680, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}
     >
       <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/notes")}
         style={{ marginBottom: 20, color: "#999", fontSize: 14 }}>
