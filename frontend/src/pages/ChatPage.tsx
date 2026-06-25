@@ -6,7 +6,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Button, Select, Typography } from "antd";
-import { ChatItem, ChatInputArea } from "@lobehub/ui/chat";
+import { ChatItem } from "@lobehub/ui/chat";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { streamChat } from "../api/chat";
@@ -261,6 +261,7 @@ export default function ChatPage() {
             borderTop: "1px solid #e8e8e8",
             padding: "10px 16px 14px",
             background: "#fff",
+            flexShrink: 0,
           }}
         >
           <AnimatePresence>
@@ -271,15 +272,9 @@ export default function ChatPage() {
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                 transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "4px 10px",
-                  background: "#e6f4ff",
-                  borderRadius: 6,
-                  fontSize: 12,
-                  color: "#1677ff",
-                  overflow: "hidden",
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", background: "#e6f4ff", borderRadius: 6,
+                  fontSize: 12, color: "#1677ff", overflow: "hidden",
                 }}
               >
                 <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -290,35 +285,52 @@ export default function ChatPage() {
               </motion.div>
             )}
           </AnimatePresence>
-          <ChatInputArea
-            value={input}
-            onInput={setInput}
-            onSend={send}
-            loading={loading}
-            placeholder="输入问题，Enter 发送"
-            bottomAddons={
-              <ChatInputArea.ActionBar
-                rightAddons={
-                  <Button
-                    type="primary"
-                    icon={<SendOutlined />}
-                    onClick={send}
-                    loading={loading}
-                    disabled={!input.trim()}
-                    style={{
-                      borderRadius: 10,
-                      width: 36,
-                      height: 36,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 0,
-                    }}
-                  />
+          <div
+            style={{
+              display: "flex", gap: 8, alignItems: "flex-end",
+              border: "1px solid #d9d9d9", borderRadius: 14,
+              padding: "6px 6px 6px 14px", background: "#fff",
+              transition: "border-color 0.2s",
+            }}
+            onFocusCapture={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#1677ff"; }}
+            onBlurCapture={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#d9d9d9"; }}
+          >
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
                 }
-              />
-            }
-          />
+              }}
+              placeholder="输入问题，Enter 发送"
+              rows={1}
+              style={{
+                flex: 1, border: "none", outline: "none", resize: "none",
+                fontSize: 14, fontFamily: "inherit", lineHeight: 1.5,
+                padding: "5px 0", background: "transparent",
+                minHeight: 24, maxHeight: 120,
+              }}
+              onInput={(e) => {
+                const el = e.currentTarget;
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 120) + "px";
+              }}
+            />
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={send}
+              loading={loading}
+              disabled={!input.trim()}
+              style={{
+                borderRadius: 10, width: 36, height: 36,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: 0, flexShrink: 0,
+              }}
+            />
+          </div>
         </div>
       </div>
 
