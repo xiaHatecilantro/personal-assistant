@@ -5,7 +5,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { Button, Input, Select, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { askChat } from "../api/chat";
 import { useModelStore } from "../store/modelStore";
 import ModelSettings from "../components/ModelSettings";

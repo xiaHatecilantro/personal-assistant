@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import client from "../api/client";
 import TaskBoard from "../components/ui/agent-plan";
 import { fetchTasks } from "../api/tasks";

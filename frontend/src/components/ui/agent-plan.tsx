@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import { fetchTasks } from "../../api/tasks";
 import type { Task as TaskType } from "../../types/task";

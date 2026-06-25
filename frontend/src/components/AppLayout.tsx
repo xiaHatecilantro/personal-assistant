@@ -12,7 +12,7 @@ import {
 import { Breadcrumb, Button, Dropdown, Layout, Menu, Space, theme } from "antd";
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useAuthStore } from "../store/authStore";
 
 const { Sider, Content, Header } = Layout;
