@@ -1,12 +1,14 @@
 import {
+  DeleteOutlined,
+  RobotOutlined,
   SendOutlined,
   SettingOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Input, Select, Typography } from "antd";
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { askChat } from "../api/chat";
+import { Button, Select, Typography } from "antd";
+import { ChatItem, ChatInputArea } from "@lobehub/ui/chat";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { streamChat } from "../api/chat";
 import { useModelStore } from "../store/modelStore";
 import ModelSettings from "../components/ModelSettings";
 import FileExplorer from "../components/FileExplorer";
@@ -24,56 +26,86 @@ const fmt = () =>
 export default function ChatPage() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [selectedFileContent, setSelectedFileContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { models, activeModelId, setActive } = useModelStore();
   const activeModel = models.find((m) => m.id === activeModelId);
 
-  const [selectedFileName, setSelectedFileName] = useState("");
-  const [selectedFileContent, setSelectedFileContent] = useState("");
-
-  const chatMutation = useMutation({
-    mutationFn: ({ msg, content, path }: { msg: string; content?: string; path?: string }) =>
-      askChat(msg, {
-        modelConfig: activeModel?.provider ? {
-          provider: activeModel.provider,
-          baseUrl: activeModel.baseUrl,
-          apiKey: activeModel.apiKey,
-          model: activeModel.model,
-        } : undefined,
-        fileContent: content,
-        filePath: path,
-      }),
-    onSuccess: (res) => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now().toString(), role: "assistant", content: res.reply || "收到", time: fmt() },
-      ]);
-    },
-  });
-
-  const send = () => {
-    const t = input.trim();
-    if (!t || chatMutation.isPending) return;
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: t, time: fmt() }]);
-    setInput("");
-    chatMutation.mutate({ msg: t, content: selectedFileContent, path: selectedFileName });
-  };
-
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const send = useCallback(async () => {
+    const t = input.trim();
+    if (!t || loading) return;
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: t,
+      time: fmt(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
+
+    const assistantId = (Date.now() + 1).toString();
+    const assistantMsg: Message = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      time: fmt(),
+    };
+    setMessages((prev) => [...prev, assistantMsg]);
+
+    try {
+      let content = "";
+      for await (const token of streamChat(t, {
+        modelConfig: activeModel ? { ...activeModel } : undefined,
+        fileContent: selectedFileContent || undefined,
+        filePath: selectedFileName || undefined,
+      })) {
+        content += token;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, content } : m)),
+        );
+      }
+      setMessages((prev) =>
+        prev.map((m) => (m.id === assistantId ? { ...m, time: fmt() } : m)),
+      );
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? { ...m, content: `请求失败: ${errMsg}`, time: fmt() }
+            : m,
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [input, loading, activeModel, selectedFileContent, selectedFileName]);
 
   const handleSelectFile = async (file: File, name: string) => {
     setSelectedFileName(name);
     try {
       const text = await file.text();
       setSelectedFileContent(text);
-      setInput(`请分析以下文件内容（来自 ${name}）：\n\n\`\`\`\n${text.slice(0, 3000)}\n\`\`\``);
+      setInput(
+        `请分析以下文件内容（来自 ${name}）：\n\n\`\`\`\n${text.slice(0, 3000)}\n\`\`\``,
+      );
     } catch {
       setSelectedFileContent("");
     }
+  };
+
+  const clearFile = () => {
+    setSelectedFileName("");
+    setSelectedFileContent("");
   };
 
   return (
@@ -167,75 +199,27 @@ export default function ChatPage() {
               </Typography.Text>
             </div>
           ) : (
-            messages.map((msg, idx) => {
-              const isUser = msg.role === "user";
-              const prev = idx > 0 ? messages[idx - 1] : null;
-              return (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-                >
-                  {prev && prev.role !== msg.role && <div style={{ height: 12 }} />}
-                  <div
-                    style={{
-                      padding: "6px 24px",
-                      ...(isUser
-                        ? {
-                            background: "#f8f9fa",
-                            borderTop: "1px solid #f0f0f0",
-                            borderBottom: "1px solid #f0f0f0",
-                          }
-                        : {}),
-                    }}
-                  >
-                    <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", gap: 12 }}>
-                      <div style={{ width: 44, flexShrink: 0, textAlign: "right" }}>
-                        <Typography.Text
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: isUser ? "#1677ff" : "#999",
-                          }}
-                        >
-                          {isUser ? "你" : "AI"}
-                        </Typography.Text>
-                      </div>
-                      <div
-                        style={{
-                          flex: 1,
-                          fontSize: 14,
-                          lineHeight: 1.75,
-                          color: "#333",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          minWidth: 0,
-                        }}
-                      >
-                        {msg.content}
-                        <span style={{ fontSize: 10, color: "#ccc", marginLeft: 10 }}>
-                          {msg.time}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })
+            messages.map((msg) => (
+              <ChatItem
+                key={msg.id}
+                avatar={msg.role === "user"
+                  ? { avatar: <UserOutlined />, title: "你" }
+                  : { avatar: <RobotOutlined />, title: "AI" }}
+                message={msg.content}
+                placement={msg.role === "user" ? "right" : "left"}
+                showTitle
+              />
+            ))
           )}
 
-          {chatMutation.isPending && (
-            <div style={{ padding: "6px 24px" }}>
-              <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", gap: 12 }}>
-                <div style={{ width: 44, flexShrink: 0, textAlign: "right" }}>
-                  <Typography.Text style={{ fontSize: 10, fontWeight: 600, color: "#999" }}>
-                    AI
-                  </Typography.Text>
-                </div>
-                <div style={{ fontSize: 14, color: "#bbb", lineHeight: 1.75 }}>...</div>
-              </div>
-            </div>
+          {loading && (
+            <ChatItem
+              avatar={{ avatar: <RobotOutlined />, title: "AI" }}
+              message=""
+              placement="left"
+              loading
+              showTitle
+            />
           )}
         </div>
 
@@ -243,67 +227,61 @@ export default function ChatPage() {
         <div
           style={{
             borderTop: "1px solid #e8e8e8",
-            padding: "12px 24px 16px",
+            padding: "10px 16px 14px",
             background: "#fff",
           }}
         >
-          <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {selectedFileName && (
             <div
               style={{
                 display: "flex",
-                gap: 8,
-                border: "1px solid #d9d9d9",
-                borderRadius: 12,
-                padding: "4px 4px 4px 14px",
-                alignItems: "flex-end",
-                background: "#fff",
-                transition: "border-color 0.2s",
-              }}
-              onFocusCapture={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "#1677ff";
-              }}
-              onBlurCapture={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "#d9d9d9";
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 8,
+                padding: "4px 10px",
+                background: "#e6f4ff",
+                borderRadius: 6,
+                fontSize: 12,
+                color: "#1677ff",
               }}
             >
-              <Input.TextArea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onPressEnter={(e) => {
-                  if (!e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
-                placeholder="输入问题，Enter 发送"
-                autoSize={{ minRows: 1, maxRows: 5 }}
-                variant="borderless"
-                style={{
-                  flex: 1,
-                  fontSize: 14,
-                  resize: "none",
-                  padding: "6px 0",
-                }}
-              />
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={send}
-                loading={chatMutation.isPending}
-                disabled={!input.trim()}
-                style={{
-                  borderRadius: 10,
-                  width: 36,
-                  height: 36,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  padding: 0,
-                }}
-              />
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {selectedFileName}
+              </span>
+              <Button type="text" size="small" icon={<DeleteOutlined />} onClick={clearFile}
+                style={{ color: "#999", fontSize: 12 }} />
             </div>
-          </div>
+          )}
+          <ChatInputArea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onInput={setInput}
+            onSend={send}
+            loading={loading}
+            placeholder="输入问题，Enter 发送"
+            bottomAddons={
+              <ChatInputArea.ActionBar
+                rightAddons={
+                  <Button
+                    type="primary"
+                    icon={<SendOutlined />}
+                    onClick={send}
+                    loading={loading}
+                    disabled={!input.trim()}
+                    style={{
+                      borderRadius: 10,
+                      width: 36,
+                      height: 36,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 0,
+                    }}
+                  />
+                }
+              />
+            }
+          />
         </div>
       </div>
 

@@ -1,7 +1,9 @@
-import hashlib, json
+import asyncio, hashlib, json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -231,25 +233,76 @@ def knowledge_graph(db: Session = Depends(get_db)):
 
 class ChatMessage(BaseModel):
     message: str = Field(..., min_length=1)
+    provider_config: dict | None = None
+    file_content: str | None = None
+    file_path: str | None = None
+
+
+def _build_chat_messages(body: ChatMessage, db: Session) -> list[dict]:
+    """构造发给 LLM 的 messages 列表，注入知识库上下文"""
+    system_parts = ["你是个人知识管理助手。用中文回复，简洁准确。"]
+    notes = db.execute(
+        select(Note).where(Note.owner_id == OWNER_ID).order_by(Note.updated_at.desc()).limit(20)
+    ).scalars().all()
+    if notes:
+        ctx = "\n".join(f"- [{n.title}] {n.content[:300]}" for n in notes)
+        system_parts.append(f"参考知识库片段：\n{ctx}")
+    system = "\n\n".join(system_parts)
+    user = body.message
+    if body.file_content:
+        user = f"文件: {body.file_path or '未知'}\n```\n{body.file_content[:5000]}\n```\n\n{body.message}"
+    return [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+
+def _sse_chunk(token: str) -> str:
+    return f"data: {json.dumps({'token': token})}\n\n"
 
 
 @router.post("/knowledge/chat")
 def chat_with_knowledge(body: ChatMessage, db: Session = Depends(get_db)):
-    """AI 对话（待接入 LLM）"""
-    notes = db.execute(
-        select(Note).where(Note.owner_id == OWNER_ID).order_by(Note.updated_at.desc()).limit(20)
-    ).scalars().all()
+    """AI 对话（SSE 流式，需要前端传入 model_config）"""
+    if not body.provider_config or not body.provider_config.get("apiKey"):
+        raise HTTPException(400, "请在模型设置中配置 API Key")
 
-    context_titles = [n.title for n in notes]
+    mc = body.provider_config
+    client = OpenAI(base_url=mc["baseUrl"], api_key=mc["apiKey"])
 
-    return {
-        "status": "not_configured",
-        "reply": (
-            f"收到消息：「{body.message}」\n\n"
-            "LLM API 尚未配置。接入后可基于你的知识库（"
-            + "、".join(context_titles[:5])
-            + f"等 {len(notes)} 篇笔记）回答问题。\n\n"
-            "配置方式：在 backend/.env 中设置 LLM_PROVIDER 和对应的 API Key。"
-        ),
-        "context_notes": len(notes),
-    }
+    messages = _build_chat_messages(body, db)
+
+    try:
+        stream = client.chat.completions.create(
+            model=mc.get("model", "deepseek-chat"),
+            messages=messages,
+            stream=True,
+            max_tokens=4096,
+            temperature=0.7,
+        )
+
+        def generate():
+            try:
+                for chunk in stream:
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        yield _sse_chunk(delta.content)
+                yield f"data: {json.dumps({'done': True})}\n\n"
+            except Exception:
+                yield _sse_chunk("\n\n[流中断]")
+                yield f"data: {json.dumps({'done': True})}\n\n"
+
+        return StreamingResponse(
+            generate(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+    except Exception as e:
+        msg = str(e)
+        if "401" in msg or "auth" in msg.lower():
+            raise HTTPException(401, "API Key 无效或被拒绝")
+        raise HTTPException(500, f"LLM 调用失败: {msg[:200]}")
