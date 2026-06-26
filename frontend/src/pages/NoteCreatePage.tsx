@@ -34,7 +34,6 @@ export default function NoteCreatePage() {
 
   return createPortal(
     <div
-      onClick={() => navigate(-1)}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         display: "flex", alignItems: "center", justifyContent: "center",
