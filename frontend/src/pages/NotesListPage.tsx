@@ -64,11 +64,6 @@ function NoteCard({ note, delay }: { note: Note; delay: number }) {
             {note.category}
           </span>
         )}
-        {note.domain && (
-          <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 8, background: "#f0fdf4", color: "#52c41a", fontWeight: 500 }}>
-            {note.domain}
-          </span>
-        )}
         {note.tags?.map((t: string) => (
           <span key={t} style={{ fontSize: 11, color: "#bbb" }}>#{t}</span>
         ))}
@@ -101,13 +96,12 @@ export default function NotesListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
-  const [domain, setDomain] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
   const { data: notes, isLoading } = useQuery({
-    queryKey: ["notes", { search, category, domain }],
-    queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined, domain: domain || undefined }),
+    queryKey: ["notes", { search, category }],
+    queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,13 +139,6 @@ export default function NotesListPage() {
             options={[
               { value: "编程", label: "编程" }, { value: "学习", label: "学习" },
               { value: "生活", label: "生活" }, { value: "工作", label: "工作" },
-            ]}
-          />
-          <Select allowClear placeholder="领域" style={{ width: 120 }}
-            value={domain} onChange={(v) => setDomain(v || null)}
-            options={[
-              { value: "Python", label: "Python" }, { value: "AI", label: "AI" },
-              { value: "前端", label: "前端" }, { value: "后端", label: "后端" },
             ]}
           />
         </div>

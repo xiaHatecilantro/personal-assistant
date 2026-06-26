@@ -42,7 +42,7 @@ export default function NoteCreatePage() {
       </Button>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", margin: "0 0 28px" }}>新建笔记</h2>
       <NoteForm
-        initialValues={{ title: defaultTitle, content: defaultContent, tags: [], category: null, domain: null, source_url: null, is_pinned: false }}
+        initialValues={{ title: defaultTitle, content: defaultContent, tags: [], category: null, source_url: null, is_pinned: false }}
         onSubmit={(values) => mutation.mutate(values)}
         onCancel={() => navigate("/notes")}
         loading={mutation.isPending}

@@ -5,7 +5,6 @@ export interface NoteFormValues {
   title: string;
   content: string;
   category: string | null;
-  domain: string | null;
   tags: string[];
   source_url: string | null;
   is_pinned: boolean;
@@ -27,7 +26,6 @@ export default function NoteForm({ initialValues, onSubmit, onCancel, loading }:
         title: initialValues.title || "",
         content: initialValues.content || "",
         category: initialValues.category || null,
-        domain: initialValues.domain || null,
         tags: initialValues.tags || [],
         source_url: initialValues.source_url || null,
         is_pinned: initialValues.is_pinned || false,
@@ -49,7 +47,6 @@ export default function NoteForm({ initialValues, onSubmit, onCancel, loading }:
       }
       initialValues={{
         category: null,
-        domain: null,
         tags: [],
         is_pinned: false,
         content: "",
@@ -83,20 +80,6 @@ export default function NoteForm({ initialValues, onSubmit, onCancel, loading }:
               { value: "学习", label: "学习" },
               { value: "生活", label: "生活" },
               { value: "工作", label: "工作" },
-            ]}
-          />
-        </Form.Item>
-
-        <Form.Item name="domain" label="领域">
-          <Select
-            allowClear
-            placeholder="选择领域"
-            style={{ width: 160 }}
-            options={[
-              { value: "Python", label: "Python" },
-              { value: "AI", label: "AI" },
-              { value: "前端", label: "前端" },
-              { value: "后端", label: "后端" },
             ]}
           />
         </Form.Item>
