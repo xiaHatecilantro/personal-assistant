@@ -195,9 +195,9 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
         <Typography.Text style={{ fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.06em", textTransform: "uppercase" }}>
           工作区
         </Typography.Text>
-        {/* label 包裹 input — 点击 label 天然触发文件选择器，无需 JS click() */}
+        {/* label 包裹 input — click 直接触发原生文件选择器 */}
         <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-          <FolderAddOutlined style={{ fontSize: 14, color: "#888" }} />
+          <FolderAddOutlined style={{ fontSize: 14, color: "#888", pointerEvents: "none" }} />
           <input
             type="file"
             // @ts-ignore webkitdirectory is a non-standard attribute
@@ -215,14 +215,13 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
           <Typography.Text type="secondary" style={{ fontSize: 12, textAlign: "center", marginBottom: 12 }}>
             打开一个文件夹开始工作
           </Typography.Text>
-          {/* label + 纯样式按钮 + input — Button 组件会截获 click */}
           <label style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "4px 16px", fontSize: 14, borderRadius: 10,
             border: "none", background: "#1677ff", color: "#fff",
             cursor: "pointer", fontWeight: 500, userSelect: "none",
           }}>
-            <FolderAddOutlined />
+            <FolderAddOutlined style={{ pointerEvents: "none" }} />
             打开文件夹
             <input
               type="file"

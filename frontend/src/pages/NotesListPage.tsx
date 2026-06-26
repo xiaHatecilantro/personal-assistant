@@ -147,10 +147,9 @@ export default function NotesListPage() {
             padding: "5px 16px", fontSize: 14, borderRadius: 10,
             border: "1px solid #d9d9d9", background: "#fff",
             cursor: "pointer", fontWeight: 500, color: "#333",
-            transition: "border-color 0.2s, color 0.2s",
             userSelect: "none",
           }}>
-            <ImportOutlined />
+            <ImportOutlined style={{ pointerEvents: "none" }} />
             导入
             <input
               type="file"
