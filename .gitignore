@@ -6,10 +6,4 @@ __pycache__
 *.pyc
 .vite
 .playwright-mcp
-chat-page-verify.png
-chat-new.png
-phase3-dashboard.png
-before-dark.md
-toc-dashboard.png
-desktop-dashboard.png
-chat-fix.png
+/*.png
