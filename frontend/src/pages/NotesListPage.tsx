@@ -142,15 +142,16 @@ export default function NotesListPage() {
           />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <label style={{ cursor: "pointer", display: "inline-flex" }}>
-            <Button
-              icon={<ImportOutlined />}
-              onClick={() => {}}
-              loading={importing}
-              style={{ borderRadius: 10, pointerEvents: "none" }}
-            >
-              导入
-            </Button>
+          <label style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 16px", fontSize: 14, borderRadius: 10,
+            border: "1px solid #d9d9d9", background: "#fff",
+            cursor: "pointer", fontWeight: 500, color: "#333",
+            transition: "border-color 0.2s, color 0.2s",
+            userSelect: "none",
+          }}>
+            <ImportOutlined />
+            导入
             <input
               type="file"
               accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"

@@ -5,7 +5,7 @@ import {
   FolderAddOutlined,
   FolderOutlined,
 } from "@ant-design/icons";
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useWorkspaceStore } from "../store/workspaceStore";
@@ -215,11 +215,15 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
           <Typography.Text type="secondary" style={{ fontSize: 12, textAlign: "center", marginBottom: 12 }}>
             打开一个文件夹开始工作
           </Typography.Text>
-          {/* label 包裹 button+input — 原生 HTML 关联 */}
-          <label style={{ cursor: "pointer", display: "inline-block" }}>
-            <Button size="small" type="primary" icon={<FolderAddOutlined />} onClick={() => {}}>
-              打开文件夹
-            </Button>
+          {/* label + 纯样式按钮 + input — Button 组件会截获 click */}
+          <label style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "4px 16px", fontSize: 14, borderRadius: 10,
+            border: "none", background: "#1677ff", color: "#fff",
+            cursor: "pointer", fontWeight: 500, userSelect: "none",
+          }}>
+            <FolderAddOutlined />
+            打开文件夹
             <input
               type="file"
               // @ts-ignore
