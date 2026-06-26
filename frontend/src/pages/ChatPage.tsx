@@ -13,6 +13,7 @@ import { streamChat } from "../api/chat";
 import { useModelStore } from "../store/modelStore";
 import ModelSettings from "../components/ModelSettings";
 import FileExplorer from "../components/FileExplorer";
+import EmptyState from "../components/ui/EmptyState";
 
 interface Message {
   id: string;
@@ -199,23 +200,8 @@ export default function ChatPage() {
           style={{ flex: 1, overflow: "auto", padding: "16px 0", background: "#fff" }}
         >
           {messages.length === 0 ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                color: "#ccc",
-              }}
-            >
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ marginBottom: 16, opacity: 0.25 }}>
-                <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2z" />
-                <path d="M8 9a1 1 0 011-1h6a1 1 0 010 2H9a1 1 0 01-1-1zM8 13a1 1 0 011-1h4a1 1 0 010 2H9a1 1 0 01-1-1z" />
-              </svg>
-              <Typography.Text style={{ fontSize: 14, color: "#bbb" }}>
-                从左侧文件树选择笔记，或直接输入问题
-              </Typography.Text>
+            <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <EmptyState icon="💬" title="开始对话" hint="从左侧文件树选择笔记，或直接输入问题" />
             </div>
           ) : (
             messages.map((msg) => (

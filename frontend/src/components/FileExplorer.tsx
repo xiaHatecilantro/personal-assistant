@@ -105,15 +105,15 @@ function TreeNode({
       <div
         onClick={handleClick}
         style={{
-          display: "flex", alignItems: "center", gap: 2, height: 26,
+          display: "flex", alignItems: "center", gap: 2, height: 30,
           paddingLeft: 4 + depth * 16, paddingRight: 6,
           cursor: node.type === "folder" || (!!node.file && !isBinary(node.name)) ? "pointer" : "default",
-          fontSize: 13, color: "#555", transition: "background 0.08s",
-          userSelect: "none", borderRadius: 3, margin: "1px 4px",
+          fontSize: 13, color: "#555", transition: "background 0.12s",
+          userSelect: "none", borderRadius: 8, margin: "1px 6px",
           opacity: node.type === "file" && !node.file ? 0.45 : (isBinary(node.name) ? 0.45 : 1),
-          background: isActive ? "#d0ebff" : "transparent",
+          background: isActive ? "#e6f4ff" : "transparent",
         }}
-        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#e8e8e8"; }}
+        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#f0f0f0"; }}
         onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
       >
         {node.type === "folder" ? (
@@ -230,7 +230,7 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
         <>
           <div style={{
             display: "flex", overflow: "auto", borderBottom: "1px solid #f0f0f0",
-            background: "#f9f9f9", flexShrink: 0,
+            background: "#fff", flexShrink: 0,
           }}>
             {workspaces.map((ws) => (
               <div

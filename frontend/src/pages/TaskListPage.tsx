@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { deleteTask, fetchTasks } from "../api/tasks";
 import TaskFilterBar from "../components/TaskFilterBar";
+import EmptyState from "../components/ui/EmptyState";
 import { useFilterStore } from "../store/filterStore";
 import type { Task } from "../types/task";
 
@@ -142,12 +143,9 @@ export default function TaskListPage() {
 
       <Spin spinning={isLoading}>
         {tasks.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 60, background: "#fff", borderRadius: 20, border: "1px solid #f0f0f0" }}>
-            <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 12 }}>📋</div>
-            <div style={{ fontSize: 15, color: "#999" }}>
-              {activeTab === "daily" ? "还没有每日任务" : activeTab === "long_term" ? "还没有长期任务" : "还没有短期任务"}
-            </div>
-          </div>
+          <EmptyState icon="📋" title={
+            activeTab === "daily" ? "还没有每日任务" : activeTab === "long_term" ? "还没有长期任务" : "还没有短期任务"
+          } />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {tasks.map((t, i) => (

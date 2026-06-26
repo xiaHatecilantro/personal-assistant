@@ -17,6 +17,7 @@ import { fetchTasks } from "../api/tasks";
 import type { Task as TaskType } from "../types/task";
 import { useContext } from "react";
 import { ThemeModeContext } from "../App";
+import EmptyState from "../components/ui/EmptyState";
 
 interface Overview {
   total: number;
@@ -169,11 +170,7 @@ export default function DashboardPage() {
           </div>
 
           {todayTasks.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 48, background: "#fff", borderRadius: 20, border: "1px solid #f0f0f0" }}>
-              <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.4 }}>🎯</div>
-              <div style={{ fontSize: 15, color: "#999", marginBottom: 6 }}>今天没有待办任务</div>
-              <div style={{ fontSize: 13, color: "#bbb" }}>点击右下角 + 按钮创建一个吧</div>
-            </div>
+            <EmptyState icon="🎯" title="今天没有待办任务" hint="点击右下角 + 按钮创建一个吧" />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {todayTasks.map((t, i) => <TaskRow key={t.id} task={t} delay={0.3 + i * 0.04} />)}

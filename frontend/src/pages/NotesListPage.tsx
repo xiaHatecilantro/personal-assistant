@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { deleteNote, fetchNotes } from "../api/notes";
 import type { Note } from "../types/note";
+import EmptyState from "../components/ui/EmptyState";
 
 function NoteCard({ note, delay }: { note: Note; delay: number }) {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function NoteCard({ note, delay }: { note: Note; delay: number }) {
       transition={{ duration: 0.3, delay, ease: [0.25, 1, 0.5, 1] }}
       onClick={() => navigate(`/notes/${note.id}`)}
       style={{
-        background: "#fff", borderRadius: 16, border: "1px solid #f0f0f0",
+        background: "#fefdfb", borderRadius: 16, border: "1px solid #f0ede5",
         padding: "22px 24px", cursor: "pointer",
         transition: "box-shadow 0.15s",
         display: "flex", flexDirection: "column", gap: 12,
@@ -146,10 +147,7 @@ export default function NotesListPage() {
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: "center", padding: 60, background: "#fff", borderRadius: 20, border: "1px solid #f0f0f0" }}>
-            <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 12 }}>📝</div>
-            <div style={{ fontSize: 15, color: "#999" }}>还没有笔记，点击上方按钮创建</div>
-          </div>
+          <EmptyState icon="📝" title="还没有笔记" hint="点击上方按钮创建第一篇笔记" />
         )}
       </Spin>
     </div>
