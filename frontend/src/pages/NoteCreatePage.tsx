@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Form, Input, Select, Switch } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -31,17 +32,15 @@ export default function NoteCreatePage() {
     },
   });
 
-  return (
-    /* 毛玻璃遮罩 */
+  return createPortal(
     <div
       onClick={() => navigate("/notes")}
       style={{
-        position: "fixed", inset: 0, zIndex: 100,
+        position: "fixed", inset: 0, zIndex: 1000,
         display: "flex", alignItems: "center", justifyContent: "center",
         background: "rgba(0,0,0,0.25)", backdropFilter: "blur(4px)",
       }}
     >
-      {/* 弹窗卡片 */}
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -93,11 +92,7 @@ export default function NoteCreatePage() {
           </div>
 
           <Form.Item name="tags" label="标签">
-            <Select
-              mode="tags"
-              placeholder="输入标签后回车"
-              style={{ width: "100%" }}
-            />
+            <Select mode="tags" placeholder="输入标签后回车" style={{ width: "100%" }} />
           </Form.Item>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
@@ -109,6 +104,7 @@ export default function NoteCreatePage() {
           </div>
         </Form>
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }

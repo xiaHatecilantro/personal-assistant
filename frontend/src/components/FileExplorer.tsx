@@ -5,8 +5,8 @@ import {
   FolderAddOutlined,
   FolderOutlined,
 } from "@ant-design/icons";
-import { Typography } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Typography } from "antd";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
@@ -159,7 +159,16 @@ function TreeNode({
 export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const { workspaces, activePath, addWorkspace, removeWorkspace, setActive } = useWorkspaceStore();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const folderInputRef = useRef<HTMLInputElement | null>(null);
   const [treeMap, setTreeMap] = useState<Map<string, FSNode[]>>(new Map());
+
+  // React 会剥离 webkitdirectory 属性，通过原生 DOM 属性写入
+  const setFolderRef = useCallback((el: HTMLInputElement | null) => {
+    folderInputRef.current = el;
+    if (el) {
+      (el as HTMLInputElement & { webkitdirectory: boolean }).webkitdirectory = true;
+    }
+  }, []);
 
   useEffect(() => {
     if (workspaces.length > 0 && !activePath) {
@@ -167,12 +176,17 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
     }
   }, [workspaces, activePath, setActive]);
 
+  const handlePickFolder = useCallback(() => {
+    folderInputRef.current?.click();
+  }, []);
+
   const handleFilesSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     const { rootName, nodes } = buildTreeFromFiles(files);
     setTreeMap((prev) => new Map(prev).set(rootName, nodes));
     addWorkspace(rootName);
+    // 重置 input 以便可以重新选择同一文件夹
     e.target.value = "";
   }, [addWorkspace]);
 
@@ -188,6 +202,15 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
 
   return (
     <div style={{ userSelect: "none", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* 隐藏的文件夹选择器 — 必须始终挂载在 DOM 中 */}
+      <input
+        ref={setFolderRef}
+        type="file"
+        multiple
+        style={{ display: "none" }}
+        onChange={handleFilesSelected}
+      />
+
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "8px 12px", borderBottom: "1px solid #e8e8e8",
@@ -195,19 +218,8 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
         <Typography.Text style={{ fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.06em", textTransform: "uppercase" }}>
           工作区
         </Typography.Text>
-        {/* label 包裹 input — click 直接触发原生文件选择器 */}
-        <label style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-          <FolderAddOutlined style={{ fontSize: 14, color: "#888", pointerEvents: "none" }} />
-          <input
-            type="file"
-            // @ts-ignore webkitdirectory is a non-standard attribute
-            webkitdirectory=""
-            directory=""
-            multiple
-            style={{ display: "none" }}
-            onChange={handleFilesSelected}
-          />
-        </label>
+        <Button type="text" size="small" icon={<FolderAddOutlined />} onClick={handlePickFolder}
+          style={{ fontSize: 14, color: "#888" }} />
       </div>
 
       {workspaces.length === 0 ? (
@@ -215,24 +227,9 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
           <Typography.Text type="secondary" style={{ fontSize: 12, textAlign: "center", marginBottom: 12 }}>
             打开一个文件夹开始工作
           </Typography.Text>
-          <label style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "4px 16px", fontSize: 14, borderRadius: 10,
-            border: "none", background: "#1677ff", color: "#fff",
-            cursor: "pointer", fontWeight: 500, userSelect: "none",
-          }}>
-            <FolderAddOutlined style={{ pointerEvents: "none" }} />
+          <Button size="small" type="primary" icon={<FolderAddOutlined />} onClick={handlePickFolder}>
             打开文件夹
-            <input
-              type="file"
-              // @ts-ignore
-              webkitdirectory=""
-              directory=""
-              multiple
-              style={{ display: "none" }}
-              onChange={handleFilesSelected}
-            />
-          </label>
+          </Button>
         </div>
       ) : (
         <>

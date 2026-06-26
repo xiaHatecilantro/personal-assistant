@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, Popconfirm, Select, Spin } from "antd";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { deleteNote, fetchNotes, importFile } from "../api/notes";
@@ -96,12 +96,17 @@ export default function NotesListPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const { message } = App.useApp();
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ["notes", { search, category }],
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
+
+  const handleImportClick = useCallback(() => {
+    importInputRef.current?.click();
+  }, []);
 
   const handleImportChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -142,22 +147,21 @@ export default function NotesListPage() {
           />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <label style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "5px 16px", fontSize: 14, borderRadius: 10,
-            border: "1px solid #d9d9d9", background: "#fff",
-            cursor: "pointer", fontWeight: 500, color: "#333",
-            userSelect: "none",
-          }}>
-            <ImportOutlined style={{ pointerEvents: "none" }} />
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
+            style={{ display: "none" }}
+            onChange={handleImportChange}
+          />
+          <Button
+            icon={<ImportOutlined />}
+            onClick={handleImportClick}
+            loading={importing}
+            style={{ borderRadius: 10 }}
+          >
             导入
-            <input
-              type="file"
-              accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
-              style={{ display: "none" }}
-              onChange={handleImportChange}
-            />
-          </label>
+          </Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/notes/new")} style={{ borderRadius: 10 }}>
             新建笔记
           </Button>
