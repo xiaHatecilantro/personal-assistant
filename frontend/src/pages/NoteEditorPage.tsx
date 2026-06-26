@@ -3,9 +3,12 @@ import {
   SaveOutlined,
   EditOutlined,
   EyeOutlined,
+  SettingOutlined,
+  PushpinFilled,
+  PushpinOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Spin, Typography } from "antd";
+import { App, Button, Input, Popover, Select, Spin, Switch, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
@@ -70,6 +73,12 @@ export default function NoteEditorPage() {
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [lastSaved, setLastSaved] = useState("");
+  const [propsOpen, setPropsOpen] = useState(false);
+  // 属性 state — 与 title/content 分离
+  const [noteCategory, setNoteCategory] = useState<string | null>(null);
+  const [noteTags, setNoteTags] = useState<string[]>([]);
+  const [notePinned, setNotePinned] = useState(false);
+  const [noteSourceUrl, setNoteSourceUrl] = useState("");
 
   const { data: note, isLoading, isError } = useQuery({
     queryKey: ["notes", Number(id)],
@@ -87,6 +96,10 @@ export default function NoteEditorPage() {
     if (note) {
       setTitle(note.title || "");
       setContent(note.content || "");
+      setNoteCategory(note.category || null);
+      setNoteTags(note.tags || []);
+      setNotePinned(!!note.is_pinned);
+      setNoteSourceUrl(note.source_url || "");
     }
   }, [note]);
 
@@ -104,15 +117,16 @@ export default function NoteEditorPage() {
     mutationFn: async () => {
       if (isNew) {
         const res = await createNote({
-          title: title || "未命名笔记", content, category: null,
-          tags: [], source_url: null, is_pinned: false,
+          title: title || "未命名笔记", content,
+          category: noteCategory, tags: noteTags,
+          source_url: noteSourceUrl || null, is_pinned: notePinned,
         });
         return res;
       }
       return updateNote(Number(id), {
         title: title || "未命名笔记", content,
-        category: note?.category || null, tags: note?.tags || [],
-        source_url: note?.source_url || null, is_pinned: note?.is_pinned || false,
+        category: noteCategory, tags: noteTags,
+        source_url: noteSourceUrl || null, is_pinned: notePinned,
       });
     },
     onSuccess: (res) => {
@@ -230,6 +244,70 @@ export default function NoteEditorPage() {
             fontFamily: "inherit", flexShrink: 0,
           }}
         />
+
+        {/* ── 属性栏 ── */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+          padding: "4px 20px 8px", flexShrink: 0,
+        }}>
+          {/* 分类 */}
+          <Select
+            size="small"
+            allowClear
+            placeholder="分类"
+            value={noteCategory}
+            onChange={(v) => setNoteCategory(v || null)}
+            variant="borderless"
+            style={{ fontSize: 12, minWidth: 100 }}
+            options={[
+              { value: "编程", label: "编程" }, { value: "学习", label: "学习" },
+              { value: "生活", label: "生活" }, { value: "工作", label: "工作" },
+            ]}
+          />
+          <span style={{ color: "#e8e8e8" }}>|</span>
+          {/* 标签 */}
+          <Select
+            size="small"
+            mode="tags"
+            placeholder="标签"
+            value={noteTags}
+            onChange={(v) => setNoteTags(v)}
+            variant="borderless"
+            style={{ fontSize: 12, minWidth: 140, flex: 1 }}
+          />
+          <span style={{ color: "#e8e8e8" }}>|</span>
+          {/* 来源 URL */}
+          <Popover
+            trigger="click"
+            open={propsOpen}
+            onOpenChange={setPropsOpen}
+            content={
+              <div style={{ width: 260 }}>
+                <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>来源 URL</div>
+                <Input
+                  size="small"
+                  value={noteSourceUrl}
+                  onChange={(e) => setNoteSourceUrl(e.target.value)}
+                  placeholder="原始材料链接"
+                  style={{ borderRadius: 6 }}
+                />
+              </div>
+            }
+          >
+            <Button type="text" size="small" icon={<SettingOutlined />}
+              style={{ color: noteSourceUrl ? "#1677ff" : "#ccc", fontSize: 11 }}>
+              {noteSourceUrl ? "来源" : ""}
+            </Button>
+          </Popover>
+          {/* 置顶 */}
+          <Button
+            type="text"
+            size="small"
+            icon={notePinned ? <PushpinFilled style={{ color: "#fa8c16" }} /> : <PushpinOutlined />}
+            onClick={() => setNotePinned(!notePinned)}
+            style={{ color: notePinned ? "#fa8c16" : "#ccc", fontSize: 11 }}
+          />
+        </div>
 
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
           <textarea
