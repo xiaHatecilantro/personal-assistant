@@ -1,6 +1,7 @@
 import { ArrowLeftOutlined, DeleteOutlined, RobotOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Popconfirm, Spin, Tag, Typography } from "antd";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "motion/react";
 import NoteForm, { type NoteFormValues } from "../components/NoteForm";
@@ -9,6 +10,11 @@ import { compileSource, deleteNote, fetchNote, fetchNotes, updateNote } from "..
 export default function NoteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // 重定向到 Obsidian 风格编辑器
+  useEffect(() => {
+    if (id) navigate(`/notes/${id}/edit`, { replace: true });
+  }, [id, navigate]);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
 

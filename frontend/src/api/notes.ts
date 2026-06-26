@@ -45,6 +45,15 @@ export function deleteNote(id: number): Promise<void> {
   return client.delete(`/notes/${id}`);
 }
 
+/** 上传文件解析为 Markdown */
+export function importFile(file: File): Promise<{ title: string; content: string; size: number }> {
+  const form = new FormData();
+  form.append("file", file);
+  return client.post("/knowledge/import", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
 export function ingestSource(data: {
   title: string;
   content: string;

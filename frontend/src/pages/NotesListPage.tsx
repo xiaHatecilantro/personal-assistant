@@ -1,17 +1,19 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  ImportOutlined,
   LinkOutlined,
   PlusOutlined,
   SearchOutlined,
   PushpinFilled,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Popconfirm, Select, Spin } from "antd";
+import { App, Button, Input, message as antMsg, Popconfirm, Select, Spin } from "antd";
+import { useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { deleteNote, fetchNotes } from "../api/notes";
+import { deleteNote, fetchNotes, importFile } from "../api/notes";
 import type { Note } from "../types/note";
 import EmptyState from "../components/ui/EmptyState";
 
@@ -100,11 +102,30 @@ export default function NotesListPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [domain, setDomain] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ["notes", { search, category, domain }],
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined, domain: domain || undefined }),
   });
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const res = await importFile(file);
+      antMsg.success("导入成功，正在跳转编辑器...");
+      navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      antMsg.error(detail || "导入失败");
+    } finally {
+      setImporting(false);
+      e.target.value = "";
+    }
+  };
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}>
@@ -134,9 +155,26 @@ export default function NotesListPage() {
             ]}
           />
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/notes/new")} style={{ borderRadius: 10 }}>
-          新建笔记
-        </Button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
+            style={{ display: "none" }}
+            onChange={handleImport}
+          />
+          <Button
+            icon={<ImportOutlined />}
+            onClick={() => fileInputRef.current?.click()}
+            loading={importing}
+            style={{ borderRadius: 10 }}
+          >
+            导入
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/notes/new")} style={{ borderRadius: 10 }}>
+            新建笔记
+          </Button>
+        </div>
       </div>
 
       <Spin spinning={isLoading}>

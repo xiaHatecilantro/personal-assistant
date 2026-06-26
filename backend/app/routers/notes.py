@@ -1,7 +1,7 @@
-import asyncio, hashlib, json
+import asyncio, hashlib, io, json, os
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -57,7 +57,80 @@ def _note_out(n: Note) -> dict:
     }
 
 
+# ── FILE IMPORT / PARSING ──
+
+def _parse_docx(data: bytes) -> str:
+    from docx import Document
+    doc = Document(io.BytesIO(data))
+    return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+def _parse_pptx(data: bytes) -> str:
+    from pptx import Presentation
+    prs = Presentation(io.BytesIO(data))
+    lines: list[str] = []
+    for i, slide in enumerate(prs.slides, 1):
+        lines.append(f"\n## 幻灯片 {i}\n")
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    t = para.text.strip()
+                    if t:
+                        lines.append(t)
+    return "\n".join(lines)
+
+def _parse_pdf(data: bytes) -> str:
+    import pdfplumber
+    lines: list[str] = []
+    with pdfplumber.open(io.BytesIO(data)) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                lines.append(text)
+    return "\n\n".join(lines)
+
+def _parse_html(raw: str) -> str:
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(raw, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+    return soup.get_text("\n", strip=True)
+
+SUPPORTED_EXTENSIONS = {".md", ".txt", ".docx", ".pptx", ".pdf", ".html", ".htm"}
+
+@router.post("/knowledge/import")
+async def import_file(file: UploadFile = File(...)):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(400, f"不支持的格式: {ext}。支持: {', '.join(sorted(SUPPORTED_EXTENSIONS))}")
+
+    data = await file.read()
+    size = len(data)
+    if size > 50 * 1024 * 1024:
+        raise HTTPException(413, "文件过大（最大 50MB）")
+
+    try:
+        if ext in (".md", ".txt"):
+            content = data.decode("utf-8", errors="replace")
+        elif ext == ".docx":
+            content = _parse_docx(data)
+        elif ext == ".pptx":
+            content = _parse_pptx(data)
+        elif ext == ".pdf":
+            content = _parse_pdf(data)
+        elif ext in (".html", ".htm"):
+            raw = data.decode("utf-8", errors="replace")
+            content = _parse_html(raw)
+        else:
+            content = data.decode("utf-8", errors="replace")
+    except Exception as e:
+        raise HTTPException(400, f"解析失败: {str(e)[:200]}")
+
+    title = os.path.splitext(file.filename)[0]
+    return {"title": title, "content": content[:50000], "size": size}
+
+
 # ── NOTES CRUD ──
+
 
 @router.get("/notes")
 def list_notes(

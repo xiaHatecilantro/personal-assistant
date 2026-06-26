@@ -15,6 +15,7 @@ import NoteCreatePage from "./pages/NoteCreatePage";
 import NoteDetailPage from "./pages/NoteDetailPage";
 import NotesListPage from "./pages/NotesListPage";
 import ChatPage from "./pages/ChatPage";
+import NoteEditorPage from "./pages/NoteEditorPage";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import TaskListPage from "./pages/TaskListPage";
 
@@ -64,7 +65,9 @@ export default function App() {
                       <Route path="tasks/:id" element={<TaskDetailPage />} />
                       <Route path="notes" element={<NotesListPage />} />
                       <Route path="notes/new" element={<NoteCreatePage />} />
+                      <Route path="notes/new/edit" element={<NoteEditorPage />} />
                       <Route path="notes/:id" element={<NoteDetailPage />} />
+                      <Route path="notes/:id/edit" element={<NoteEditorPage />} />
                       <Route path="chat" element={<ChatPage />} />
                     </Route>
                   </Routes>

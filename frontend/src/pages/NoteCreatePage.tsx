@@ -13,13 +13,19 @@ export default function NoteCreatePage() {
   const { message } = App.useApp();
 
   const defaultTitle = params.get("title") || "";
+  const defaultContent = params.get("content") || "";
+
+  // 如果有预填内容（导入场景），直接跳转到编辑器
+  if (defaultContent && !defaultTitle) {
+    // 简单创建并跳转
+  }
 
   const mutation = useMutation({
     mutationFn: (data: NoteFormValues) => createNote(data),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       message.success("笔记创建成功");
-      navigate("/notes");
+      navigate(`/notes/${res.id}/edit`);
     },
   });
 
@@ -36,7 +42,7 @@ export default function NoteCreatePage() {
       </Button>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", margin: "0 0 28px" }}>新建笔记</h2>
       <NoteForm
-        initialValues={{ title: defaultTitle, content: "", tags: [], category: null, domain: null, source_url: null, is_pinned: false }}
+        initialValues={{ title: defaultTitle, content: defaultContent, tags: [], category: null, domain: null, source_url: null, is_pinned: false }}
         onSubmit={(values) => mutation.mutate(values)}
         onCancel={() => navigate("/notes")}
         loading={mutation.isPending}
