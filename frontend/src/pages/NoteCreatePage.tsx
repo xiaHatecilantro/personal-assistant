@@ -28,7 +28,8 @@ export default function NoteCreatePage() {
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       message.success("已创建，进入编辑器");
-      navigate(`/notes/${res.id}/edit`);
+      // 用 window.location 绕过 AnimatePresence + Portal 嵌套下的 navigate 吞事件问题
+      window.location.href = `/notes/${res.id}/edit`;
     },
   });
 
