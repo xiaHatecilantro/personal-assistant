@@ -142,21 +142,22 @@ export default function NotesListPage() {
           />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
-            style={{ display: "none" }}
-            onChange={handleImportChange}
-          />
-          <Button
-            icon={<ImportOutlined />}
-            onClick={handleImportClick}
-            loading={importing}
-            style={{ borderRadius: 10 }}
-          >
+          <label style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 16px", fontSize: 14, borderRadius: 10,
+            border: "1px solid #d9d9d9", background: "#fff",
+            cursor: "pointer", fontWeight: 500, color: "#333",
+            userSelect: "none",
+          }}>
+            <ImportOutlined style={{ pointerEvents: "none" }} />
             导入
-          </Button>
+            <input
+              type="file"
+              accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
+              style={{ display: "none" }}
+              onChange={handleImportChange}
+            />
+          </label>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/notes/new")} style={{ borderRadius: 10 }}>
             新建笔记
           </Button>
