@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, Popconfirm, Select, Spin } from "antd";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { deleteNote, fetchNotes, importFile } from "../api/notes";
@@ -96,6 +96,7 @@ export default function NotesListPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const { message } = App.useApp();
 
   const { data: notes, isLoading } = useQuery({
@@ -103,30 +104,26 @@ export default function NotesListPage() {
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
 
-  const handleImport = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".md,.txt,.docx,.pptx,.pdf,.html,.htm";
-    input.style.display = "none";
-    document.body.appendChild(input);
-    input.addEventListener("change", async (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      document.body.removeChild(input);
-      if (!file) return;
-      setImporting(true);
-      try {
-        const res = await importFile(file);
-        message.success("导入成功，正在跳转编辑器...");
-        navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
-      } catch (err: unknown) {
-        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-        message.error(detail || "导入失败");
-      } finally {
-        setImporting(false);
-      }
-    });
-    input.click();
-  };
+  const handleImportClick = useCallback(() => {
+    importInputRef.current?.click();
+  }, []);
+
+  const handleImportChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const res = await importFile(file);
+      message.success("导入成功，正在跳转编辑器...");
+      navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      message.error(detail || "导入失败");
+    } finally {
+      setImporting(false);
+      e.target.value = "";
+    }
+  }, [message, navigate]);
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}>
@@ -150,9 +147,16 @@ export default function NotesListPage() {
           />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
+            style={{ display: "none" }}
+            onChange={handleImportChange}
+          />
           <Button
             icon={<ImportOutlined />}
-            onClick={handleImport}
+            onClick={handleImportClick}
             loading={importing}
             style={{ borderRadius: 10 }}
           >

@@ -159,6 +159,7 @@ function TreeNode({
 export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const { workspaces, activePath, addWorkspace, removeWorkspace, setActive } = useWorkspaceStore();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const folderInputRef = useRef<HTMLInputElement | null>(null);
   const [treeMap, setTreeMap] = useState<Map<string, FSNode[]>>(new Map());
 
   useEffect(() => {
@@ -167,24 +168,23 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
     }
   }, [workspaces, activePath, setActive]);
 
-  const handlePickFolder = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.setAttribute("webkitdirectory", "");
-    input.setAttribute("directory", "");
-    input.multiple = true;
-    input.style.display = "none";
-    document.body.appendChild(input);
-    input.addEventListener("change", (e: Event) => {
-      const files = Array.from((e.target as HTMLInputElement).files || []);
-      if (files.length === 0) return;
-      const { rootName, nodes } = buildTreeFromFiles(files);
-      setTreeMap((prev) => new Map(prev).set(rootName, nodes));
-      addWorkspace(rootName);
-      document.body.removeChild(input);
-    });
+  const handlePickFolder = useCallback(() => {
+    const input = folderInputRef.current;
+    if (!input) return;
+    // 必须同步设置 webkitdirectory 属性
+    input.webkitdirectory = true as any;
     input.click();
-  };
+  }, []);
+
+  const handleFilesSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const { rootName, nodes } = buildTreeFromFiles(files);
+    setTreeMap((prev) => new Map(prev).set(rootName, nodes));
+    addWorkspace(rootName);
+    // 重置 input 以便可以重新选择同一文件夹
+    e.target.value = "";
+  }, [addWorkspace]);
 
   const toggleFolder = useCallback((key: string) => {
     setExpanded((prev) => {
@@ -198,6 +198,17 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
 
   return (
     <div style={{ userSelect: "none", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* 隐藏的文件夹选择器 — 必须始终挂载在 DOM 中 */}
+      <input
+        ref={folderInputRef}
+        type="file"
+        directory=""
+        webkitdirectory=""
+        multiple
+        style={{ display: "none" }}
+        onChange={handleFilesSelected}
+      />
+
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "8px 12px", borderBottom: "1px solid #e8e8e8",
