@@ -6,7 +6,7 @@ import {
   FolderOutlined,
 } from "@ant-design/icons";
 import { Button, Typography } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
@@ -170,15 +170,19 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const handlePickFolder = () => {
     const input = document.createElement("input");
     input.type = "file";
-    (input as any).webkitdirectory = true;
+    input.setAttribute("webkitdirectory", "");
+    input.setAttribute("directory", "");
     input.multiple = true;
-    input.onchange = (e: Event) => {
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", (e: Event) => {
       const files = Array.from((e.target as HTMLInputElement).files || []);
       if (files.length === 0) return;
       const { rootName, nodes } = buildTreeFromFiles(files);
       setTreeMap((prev) => new Map(prev).set(rootName, nodes));
       addWorkspace(rootName);
-    };
+      document.body.removeChild(input);
+    });
     input.click();
   };
 

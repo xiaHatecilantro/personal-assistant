@@ -8,7 +8,7 @@ import {
   PushpinFilled,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, message as antMsg, Popconfirm, Select, Spin } from "antd";
+import { App, Button, Input, Popconfirm, Select, Spin } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
@@ -96,6 +96,7 @@ export default function NotesListPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const { message } = App.useApp();
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ["notes", { search, category }],
@@ -106,21 +107,24 @@ export default function NotesListPage() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".md,.txt,.docx,.pptx,.pdf,.html,.htm";
-    input.onchange = async (e: Event) => {
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", async (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0];
+      document.body.removeChild(input);
       if (!file) return;
       setImporting(true);
       try {
         const res = await importFile(file);
-        antMsg.success("导入成功，正在跳转编辑器...");
+        message.success("导入成功，正在跳转编辑器...");
         navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
       } catch (err: unknown) {
         const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-        antMsg.error(detail || "导入失败");
+        message.error(detail || "导入失败");
       } finally {
         setImporting(false);
       }
-    };
+    });
     input.click();
   };
 
