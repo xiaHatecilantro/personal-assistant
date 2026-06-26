@@ -37,14 +37,14 @@ export default function TaskCreatePage() {
       transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
       style={{ maxWidth: 600, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}
     >
-      <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/tasks")}
+      <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}
         style={{ marginBottom: 20, color: "#999", fontSize: 14 }}>
         返回
       </Button>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", margin: "0 0 28px" }}>新建任务</h2>
       <TaskForm
         onSubmit={(values) => mutation.mutate(values)}
-        onCancel={() => navigate("/tasks")}
+        onCancel={() => navigate(-1)}
         loading={mutation.isPending}
       />
     </motion.div>

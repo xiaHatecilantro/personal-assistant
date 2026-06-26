@@ -59,7 +59,7 @@ export default function NoteDetailPage() {
       transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
       style={{ maxWidth: 960, margin: "0 auto", paddingTop: 8, height: "100%", overflow: "auto" }}
     >
-      <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/notes")}
+      <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}
         style={{ marginBottom: 20, color: "#999", fontSize: 14 }}>
         返回
       </Button>

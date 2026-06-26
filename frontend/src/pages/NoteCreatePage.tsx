@@ -34,7 +34,7 @@ export default function NoteCreatePage() {
 
   return createPortal(
     <div
-      onClick={() => navigate("/notes")}
+      onClick={() => navigate(-1)}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -96,7 +96,7 @@ export default function NoteCreatePage() {
           </Form.Item>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
-            <Button onClick={() => navigate("/notes")} style={{ borderRadius: 8 }}>取消</Button>
+            <Button onClick={() => navigate(-1)} style={{ borderRadius: 8 }}>取消</Button>
             <Button type="primary" htmlType="submit" loading={mutation.isPending}
               style={{ borderRadius: 8 }}>
               创建并编辑
