@@ -5,7 +5,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Spin } from "antd";
+import { App, Button, Spin, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
@@ -20,7 +20,6 @@ function escapeHtml(s: string): string {
 function renderMarkdown(md: string): string {
   const blocks: string[] = [];
   let html = md;
-  // code blocks
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, _lang, code) => {
     blocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
     return `%%B${blocks.length - 1}%%`;
@@ -71,9 +70,8 @@ export default function NoteEditorPage() {
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [lastSaved, setLastSaved] = useState("");
-  const editorRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const { data: note, isLoading } = useQuery({
+  const { data: note, isLoading, isError } = useQuery({
     queryKey: ["notes", Number(id)],
     queryFn: () => fetchNote(Number(id)),
     enabled: !!id && !isNew,
@@ -84,13 +82,38 @@ export default function NoteEditorPage() {
     queryFn: () => fetchNotes({}),
   });
 
+  // 加载已有笔记
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title || "");
+      setContent(note.content || "");
+    }
+  }, [note]);
+
+  // 新建笔记预填
+  useEffect(() => {
+    if (isNew) {
+      const t = searchParams.get("title") || "";
+      const c = searchParams.get("content") || "";
+      if (t) setTitle(t);
+      if (c) setContent(c);
+    }
+  }, [isNew, searchParams]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (isNew) {
-        const res = await createNote({ title: title || "未命名笔记", content, category: null, tags: [], source_url: null, domain: null, is_pinned: false });
+        const res = await createNote({
+          title: title || "未命名笔记", content, category: null,
+          tags: [], source_url: null, is_pinned: false,
+        });
         return res;
       }
-      return updateNote(Number(id), { title: title || "未命名笔记", content, category: note?.category || null, tags: note?.tags || [], source_url: note?.source_url || null, domain: note?.domain || null, is_pinned: note?.is_pinned || false });
+      return updateNote(Number(id), {
+        title: title || "未命名笔记", content,
+        category: note?.category || null, tags: note?.tags || [],
+        source_url: note?.source_url || null, is_pinned: note?.is_pinned || false,
+      });
     },
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -103,21 +126,27 @@ export default function NoteEditorPage() {
     onError: () => message.error("保存失败"),
   });
 
-  useEffect(() => { if (note) { setTitle(note.title); setContent(note.content || ""); } }, [note]);
-  useEffect(() => {
-    if (isNew) { const t = searchParams.get("title"); const c = searchParams.get("content"); if (t) setTitle(t); if (c) setContent(c); }
-  }, [isNew, searchParams]);
-
+  // Ctrl+S
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); setSaving(true); saveMutation.mutate(undefined as never, { onSettled: () => setSaving(false) }); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        setSaving(true);
+        saveMutation.mutate(undefined as never, { onSettled: () => setSaving(false) });
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [saveMutation]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Tab") { e.preventDefault(); const ta = e.currentTarget; const s = ta.selectionStart; setContent(content.slice(0, s) + "  " + content.slice(ta.selectionEnd)); setTimeout(() => { ta.selectionStart = ta.selectionEnd = s + 2; }, 0); }
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const ta = e.currentTarget;
+      const s = ta.selectionStart;
+      setContent(content.slice(0, s) + "  " + content.slice(ta.selectionEnd));
+      setTimeout(() => { ta.selectionStart = ta.selectionEnd = s + 2; }, 0);
+    }
   }, [content]);
 
   const stats = useMemo(() => countStats(content), [content]);
@@ -125,31 +154,58 @@ export default function NoteEditorPage() {
 
   const notesByCategory = useMemo(() => {
     const map: Record<string, typeof allNotes> = {};
-    for (const n of allNotes || []) { const cat = n.category || "未分类"; if (!map[cat]) map[cat] = []; map[cat]!.push(n); }
+    for (const n of allNotes || []) {
+      const cat = n.category || "未分类";
+      if (!map[cat]) map[cat] = [];
+      map[cat]!.push(n);
+    }
     return map;
   }, [allNotes]);
 
-  if (isLoading) return <Spin style={{ display: "block", textAlign: "center", marginTop: 80 }} />;
+  // 加载中
+  if (isLoading) {
+    return <Spin style={{ display: "block", textAlign: "center", marginTop: 80 }} />;
+  }
+
+  // 加载失败
+  if (isError || (!isLoading && !isNew && !note)) {
+    return (
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+        <Typography.Text type="secondary">笔记加载失败，可能已被删除</Typography.Text>
+        <Button onClick={() => navigate("/notes")}>返回列表</Button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
       {/* ── 左侧目录 ── */}
-      <div style={{ width: 160, flexShrink: 0, overflow: "auto", background: "#fafafa", borderRight: "1px solid #f0f0f0", padding: "10px 0" }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/notes")} style={{ margin: "0 6px 10px", color: "#999", fontSize: 12 }}>返回</Button>
+      <div style={{
+        width: 160, flexShrink: 0, overflow: "auto",
+        background: "#fafafa", borderRight: "1px solid #f0f0f0", padding: "10px 0",
+      }}>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/notes")}
+          style={{ margin: "0 6px 10px", color: "#999", fontSize: 12 }}>
+          返回
+        </Button>
         {allNotes && allNotes.length > 0 ? (
           Object.entries(notesByCategory).map(([cat, notes]) => (
             <div key={cat} style={{ marginBottom: 6 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#bbb", padding: "3px 14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat}</div>
+              <div style={{
+                fontSize: 10, fontWeight: 600, color: "#bbb", padding: "3px 14px",
+                textTransform: "uppercase", letterSpacing: "0.05em",
+              }}>
+                {cat}
+              </div>
               {notes!.map((n) => (
-                <div key={n.id} onClick={() => navigate(`/notes/${n.id}/edit`)}
-                  style={{
-                    padding: "5px 14px", fontSize: 12, cursor: "pointer",
-                    color: n.id === Number(id) ? "#1677ff" : "#555",
-                    background: n.id === Number(id) ? "#e6f4ff" : "transparent",
-                    fontWeight: n.id === Number(id) ? 600 : 400,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    borderRadius: "0 16px 16px 0", marginRight: 6,
-                  }}>
+                <div key={n.id} onClick={() => navigate(`/notes/${n.id}/edit`)} style={{
+                  padding: "5px 14px", fontSize: 12, cursor: "pointer",
+                  color: n.id === Number(id) ? "#1677ff" : "#555",
+                  background: n.id === Number(id) ? "#e6f4ff" : "transparent",
+                  fontWeight: n.id === Number(id) ? 600 : 400,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  borderRadius: "0 16px 16px 0", marginRight: 6,
+                }}>
                   {n.title}
                 </div>
               ))}
@@ -159,25 +215,55 @@ export default function NoteEditorPage() {
       </div>
 
       {/* ── 编辑器主体 ── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
-        style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* 标题 */}
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="笔记标题..."
-          style={{ width: "100%", border: "none", outline: "none", fontSize: 20, fontWeight: 700, color: "#1a1a1a", background: "transparent", padding: "14px 20px 8px", fontFamily: "inherit", flexShrink: 0 }} />
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
+        style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}
+      >
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="笔记标题..."
+          style={{
+            width: "100%", border: "none", outline: "none",
+            fontSize: 20, fontWeight: 700, color: "#1a1a1a",
+            background: "transparent", padding: "14px 20px 8px",
+            fontFamily: "inherit", flexShrink: 0,
+          }}
+        />
 
-        {/* 编辑区（撑满剩余空间）*/}
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
-          <textarea ref={editorRef} value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={handleKeyDown}
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="开始写作... Markdown 语法。[[页面名称]] 创建关联。"
-            style={{ flex: 1, border: "none", borderTop: "1px solid #f0f0f0", outline: "none", resize: "none", fontSize: 15, lineHeight: 1.8, fontFamily: "'JetBrains Mono', Consolas, Monaco, monospace", padding: "20px 20px 40px", background: "transparent", color: "#333" }} />
+            style={{
+              flex: 1, border: "none", borderTop: "1px solid #f0f0f0",
+              outline: "none", resize: "none",
+              fontSize: 15, lineHeight: 1.8,
+              fontFamily: "'JetBrains Mono', Consolas, Monaco, monospace",
+              padding: "20px 20px 40px", background: "transparent", color: "#333",
+            }}
+          />
           {showPreview && (
-            <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: previewHtml }}
-              style={{ flex: 1, overflow: "auto", padding: "20px 20px 40px", borderLeft: "1px solid #f0f0f0", borderTop: "1px solid #f0f0f0", fontSize: 15, lineHeight: 1.8, color: "#333" }} />
+            <div
+              className="markdown-preview"
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
+              style={{
+                flex: 1, overflow: "auto",
+                padding: "20px 20px 40px",
+                borderLeft: "1px solid #f0f0f0", borderTop: "1px solid #f0f0f0",
+                fontSize: 15, lineHeight: 1.8, color: "#333",
+              }}
+            />
           )}
         </div>
 
-        {/* 底部状态栏 */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 20px", borderTop: "1px solid #f0f0f0", fontSize: 11, color: "#bbb", flexShrink: 0 }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "6px 20px", borderTop: "1px solid #f0f0f0",
+          fontSize: 11, color: "#bbb", flexShrink: 0,
+        }}>
           <div style={{ display: "flex", gap: 14 }}>
             <span>{stats.chars} 字符</span>
             <span>{stats.words} 词</span>
@@ -185,8 +271,17 @@ export default function NoteEditorPage() {
             {lastSaved && <span style={{ color: "#52c41a" }}>已保存 {lastSaved}</span>}
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            <Button type="text" size="small" icon={showPreview ? <EyeOutlined /> : <EditOutlined />} onClick={() => setShowPreview(!showPreview)} style={{ color: "#999", fontSize: 11 }}>{showPreview ? "隐藏" : "预览"}</Button>
-            <Button type="primary" size="small" icon={<SaveOutlined />} onClick={() => { setSaving(true); saveMutation.mutate(undefined as never, { onSettled: () => setSaving(false) }); }} loading={saving} style={{ borderRadius: 6 }}>保存</Button>
+            <Button type="text" size="small"
+              icon={showPreview ? <EyeOutlined /> : <EditOutlined />}
+              onClick={() => setShowPreview(!showPreview)}
+              style={{ color: "#999", fontSize: 11 }}>
+              {showPreview ? "隐藏" : "预览"}
+            </Button>
+            <Button type="primary" size="small" icon={<SaveOutlined />}
+              onClick={() => { setSaving(true); saveMutation.mutate(undefined as never, { onSettled: () => setSaving(false) }); }}
+              loading={saving} style={{ borderRadius: 6 }}>
+              保存
+            </Button>
           </div>
         </div>
       </motion.div>

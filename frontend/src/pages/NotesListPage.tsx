@@ -96,17 +96,12 @@ export default function NotesListPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
-  const importInputRef = useRef<HTMLInputElement>(null);
   const { message } = App.useApp();
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ["notes", { search, category }],
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
-
-  const handleImportClick = useCallback(() => {
-    importInputRef.current?.click();
-  }, []);
 
   const handleImportChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
