@@ -9,7 +9,6 @@ import {
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, message as antMsg, Popconfirm, Select, Spin } from "antd";
-import { useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
@@ -96,7 +95,6 @@ export default function NotesListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
   const { data: notes, isLoading } = useQuery({
@@ -104,21 +102,26 @@ export default function NotesListPage() {
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const res = await importFile(file);
-      antMsg.success("导入成功，正在跳转编辑器...");
-      navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
-    } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      antMsg.error(detail || "导入失败");
-    } finally {
-      setImporting(false);
-      e.target.value = "";
-    }
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".md,.txt,.docx,.pptx,.pdf,.html,.htm";
+    input.onchange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      setImporting(true);
+      try {
+        const res = await importFile(file);
+        antMsg.success("导入成功，正在跳转编辑器...");
+        navigate(`/notes/new/edit?title=${encodeURIComponent(res.title)}&content=${encodeURIComponent(res.content)}`);
+      } catch (err: unknown) {
+        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+        antMsg.error(detail || "导入失败");
+      } finally {
+        setImporting(false);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -143,16 +146,9 @@ export default function NotesListPage() {
           />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".md,.txt,.docx,.pptx,.pdf,.html,.htm"
-            style={{ display: "none" }}
-            onChange={handleImport}
-          />
           <Button
             icon={<ImportOutlined />}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleImport}
             loading={importing}
             style={{ borderRadius: 10 }}
           >

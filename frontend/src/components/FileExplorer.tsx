@@ -4,10 +4,9 @@ import {
   FileTextOutlined,
   FolderAddOutlined,
   FolderOutlined,
-  LoadingOutlined,
 } from "@ant-design/icons";
 import { Button, Typography } from "antd";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
@@ -160,7 +159,6 @@ function TreeNode({
 export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const { workspaces, activePath, addWorkspace, removeWorkspace, setActive } = useWorkspaceStore();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [treeMap, setTreeMap] = useState<Map<string, FSNode[]>>(new Map());
 
   useEffect(() => {
@@ -170,16 +168,18 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   }, [workspaces, activePath, setActive]);
 
   const handlePickFolder = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    const { rootName, nodes } = buildTreeFromFiles(files);
-    setTreeMap((prev) => new Map(prev).set(rootName, nodes));
-    addWorkspace(rootName);
-    e.target.value = "";
+    const input = document.createElement("input");
+    input.type = "file";
+    (input as any).webkitdirectory = true;
+    input.multiple = true;
+    input.onchange = (e: Event) => {
+      const files = Array.from((e.target as HTMLInputElement).files || []);
+      if (files.length === 0) return;
+      const { rootName, nodes } = buildTreeFromFiles(files);
+      setTreeMap((prev) => new Map(prev).set(rootName, nodes));
+      addWorkspace(rootName);
+    };
+    input.click();
   };
 
   const toggleFolder = useCallback((key: string) => {
@@ -194,18 +194,6 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
 
   return (
     <div style={{ userSelect: "none", display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        /* @ts-ignore */
-        webkitdirectory=""
-        directory=""
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFilesSelected}
-      />
-
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "8px 12px", borderBottom: "1px solid #e8e8e8",
