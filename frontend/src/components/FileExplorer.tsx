@@ -162,6 +162,14 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const folderInputRef = useRef<HTMLInputElement | null>(null);
   const [treeMap, setTreeMap] = useState<Map<string, FSNode[]>>(new Map());
 
+  // React 会剥离 webkitdirectory 属性，通过原生 DOM 属性写入
+  const setFolderRef = useCallback((el: HTMLInputElement | null) => {
+    folderInputRef.current = el;
+    if (el) {
+      (el as HTMLInputElement & { webkitdirectory: boolean }).webkitdirectory = true;
+    }
+  }, []);
+
   useEffect(() => {
     if (workspaces.length > 0 && !activePath) {
       setActive(workspaces[0].path);
@@ -169,11 +177,7 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   }, [workspaces, activePath, setActive]);
 
   const handlePickFolder = useCallback(() => {
-    const input = folderInputRef.current;
-    if (!input) return;
-    // 必须同步设置 webkitdirectory 属性
-    input.webkitdirectory = true as any;
-    input.click();
+    folderInputRef.current?.click();
   }, []);
 
   const handleFilesSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,10 +204,8 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
     <div style={{ userSelect: "none", display: "flex", flexDirection: "column", height: "100%" }}>
       {/* 隐藏的文件夹选择器 — 必须始终挂载在 DOM 中 */}
       <input
-        ref={folderInputRef}
+        ref={setFolderRef}
         type="file"
-        directory=""
-        webkitdirectory=""
         multiple
         style={{ display: "none" }}
         onChange={handleFilesSelected}
