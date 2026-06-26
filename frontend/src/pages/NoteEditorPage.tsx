@@ -172,7 +172,7 @@ export default function NoteEditorPage() {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
         <Typography.Text type="secondary">笔记加载失败，可能已被删除</Typography.Text>
-        <Button onClick={() => navigate(-1)}>返回</Button>
+        <Button onClick={() => navigate("/notes")}>返回</Button>
       </div>
     );
   }
@@ -184,7 +184,7 @@ export default function NoteEditorPage() {
         width: 160, flexShrink: 0, overflow: "auto",
         background: "#fafafa", borderRight: "1px solid #f0f0f0", padding: "10px 0",
       }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate("/notes")}
           style={{ margin: "0 6px 10px", color: "#999", fontSize: 12 }}>
           返回
         </Button>
