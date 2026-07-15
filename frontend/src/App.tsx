@@ -4,8 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "@lobehub/ui";
 import { LazyMotion, domAnimation } from "motion/react";
-import * as m from "motion/react-m";
-import { createContext, useState } from "react";
+import { useState } from "react";
 import AppLayout from "./components/AppLayout";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
@@ -15,15 +14,11 @@ import NoteCreatePage from "./pages/NoteCreatePage";
 import NoteDetailPage from "./pages/NoteDetailPage";
 import NotesListPage from "./pages/NotesListPage";
 import ChatPage from "./pages/ChatPage";
+import ExperiencePage from "./pages/ExperiencePage";
 import NoteEditorPage from "./pages/NoteEditorPage";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import TaskListPage from "./pages/TaskListPage";
-
-type ThemeMode = "light" | "dark";
-export const ThemeModeContext = createContext<{
-  themeMode: ThemeMode;
-  setThemeMode: (m: ThemeMode) => void;
-}>({ themeMode: "light", setThemeMode: () => {} });
+import { ThemeModeContext, type ThemeMode } from "./themeModeContext";
 
 const queryClient = new QueryClient();
 
@@ -35,8 +30,8 @@ export default function App() {
       <LazyMotion features={domAnimation}>
         <ThemeProvider
           customTheme={{
-            primaryColor: "#1677ff",
-            neutralColor: "#8b8c8b",
+            primaryColor: "blue",
+            neutralColor: "slate",
           }}
           appearance={themeMode}
         >
@@ -68,6 +63,7 @@ export default function App() {
                       <Route path="notes/new/edit" element={<NoteEditorPage />} />
                       <Route path="notes/:id" element={<NoteDetailPage />} />
                       <Route path="notes/:id/edit" element={<NoteEditorPage />} />
+                      <Route path="experience" element={<ExperiencePage />} />
                       <Route path="chat" element={<ChatPage />} />
                     </Route>
                   </Routes>

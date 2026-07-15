@@ -11,9 +11,13 @@ export async function* streamChat(
   message: string,
   options?: ChatOptions,
 ): AsyncGenerator<string, void, undefined> {
+  const token = localStorage.getItem("token");
   const response = await fetch("/api/v1/knowledge/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       message,
       provider_config: options?.modelConfig

@@ -47,6 +47,7 @@ export default function TaskForm({ initialValues, initialSubtasks, onSubmit, onC
         timer_preset: initialValues.timer_preset,
         subtasks: initialSubtasks || [],
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTaskType(initialValues.task_type);
     }
   }, [initialValues, initialSubtasks, form]);

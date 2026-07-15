@@ -193,7 +193,11 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const toggleFolder = useCallback((key: string) => {
     setExpanded((prev) => {
       const n = new Set(prev);
-      n.has(key) ? n.delete(key) : n.add(key);
+      if (n.has(key)) {
+        n.delete(key);
+      } else {
+        n.add(key);
+      }
       return n;
     });
   }, []);

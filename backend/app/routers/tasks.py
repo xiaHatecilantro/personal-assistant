@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -7,17 +7,9 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.config import get_db
 from app.models import Task, User
-from app.schemas import TaskCreate, TaskResponse, TaskUpdate, TimerUpdate
+from app.schemas import TaskCreate, TaskUpdate, TimerUpdate
 
 router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
-
-
-def _get_owner(user: User | None = Depends(get_current_user)) -> int:
-    """未登录返回 1（MVP 兼容），已登录返回真实用户 ID"""
-    return user.id if user else 1
-
-
-OWNER_ID = 1  # MVP 默认值，后续逐步替换为 _get_owner
 
 
 def _to_response(task: Task) -> dict:
@@ -48,8 +40,9 @@ def list_tasks(
     task_type: str | None = None,
     parent_id: int | None = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    stmt = select(Task).where(Task.owner_id == OWNER_ID)
+    stmt = select(Task).where(Task.owner_id == current_user.id)
     if parent_id is not None:
         stmt = stmt.where(Task.parent_id == parent_id)
     else:
@@ -68,15 +61,23 @@ def list_tasks(
 
 
 @router.post("", status_code=201)
-def create_task(body: TaskCreate, db: Session = Depends(get_db)):
+def create_task(
+    body: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if body.parent_id is not None:
+        parent = db.get(Task, body.parent_id)
+        if not parent or parent.owner_id != current_user.id:
+            raise HTTPException(status_code=404, detail="父任务不存在")
     task = Task(
-        owner_id=OWNER_ID,
+        owner_id=current_user.id,
         parent_id=body.parent_id,
         title=body.title,
         description=body.description,
         priority=body.priority,
         status=body.status,
-        due_date=body.due_date.isoformat() if body.due_date else None,
+        due_date=body.due_date,
         tag=body.tag,
         task_type=body.task_type,
         deadline_precision=body.deadline_precision,
@@ -88,24 +89,85 @@ def create_task(body: TaskCreate, db: Session = Depends(get_db)):
     return _to_response(task)
 
 
+@router.get("/stats/overview")
+def get_stats_overview(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    base = select(Task).where(
+        Task.owner_id == current_user.id,
+        Task.parent_id.is_(None),
+    )
+    all_tasks = db.execute(base).scalars().all()
+
+    by_status = {"todo": 0, "in_progress": 0, "done": 0}
+    by_priority = {"high": 0, "medium": 0, "low": 0}
+
+    for task in all_tasks:
+        if task.status in by_status:
+            by_status[task.status] += 1
+        if task.priority in by_priority:
+            by_priority[task.priority] += 1
+
+    return {
+        "total": len(all_tasks),
+        "by_status": by_status,
+        "by_priority": by_priority,
+    }
+
+
+@router.get("/stats/trend")
+def get_stats_trend(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    today = datetime.now().date()
+    result = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        start = datetime.combine(day, datetime.min.time())
+        end = start + timedelta(days=1)
+        count = db.execute(
+            select(Task).where(
+                Task.owner_id == current_user.id,
+                Task.status == "done",
+                Task.parent_id.is_(None),
+                Task.updated_at >= start,
+                Task.updated_at < end,
+            )
+        ).scalars().all()
+        result.append({"date": day.isoformat(), "count": len(count)})
+
+    return {"daily_completed": result}
+
+
 @router.get("/{task_id}")
-def get_task(task_id: int, db: Session = Depends(get_db)):
+def get_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     task = db.get(Task, task_id)
-    if not task or task.owner_id != OWNER_ID:
+    if not task or task.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="任务不存在")
     return _to_response(task)
 
 
 @router.put("/{task_id}")
-def update_task(task_id: int, body: TaskUpdate, db: Session = Depends(get_db)):
+def update_task(
+    task_id: int,
+    body: TaskUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     task = db.get(Task, task_id)
-    if not task or task.owner_id != OWNER_ID:
+    if not task or task.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="任务不存在")
     task.title = body.title
     task.description = body.description
     task.priority = body.priority
     task.status = body.status
-    task.due_date = body.due_date.isoformat() if body.due_date else None
+    task.due_date = body.due_date
     task.tag = body.tag
     task.task_type = body.task_type
     task.deadline_precision = body.deadline_precision
@@ -116,68 +178,31 @@ def update_task(task_id: int, body: TaskUpdate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{task_id}", status_code=204)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     task = db.get(Task, task_id)
-    if not task or task.owner_id != OWNER_ID:
+    if not task or task.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="任务不存在")
     db.delete(task)
     db.commit()
 
 
 @router.patch("/{task_id}/timer")
-def update_timer(task_id: int, body: TimerUpdate, db: Session = Depends(get_db)):
+def update_timer(
+    task_id: int,
+    body: TimerUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """每日任务计时：上报累计秒数"""
     task = db.get(Task, task_id)
-    if not task or task.owner_id != OWNER_ID:
+    if not task or task.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="任务不存在")
     if task.task_type != "daily":
         raise HTTPException(status_code=400, detail="仅每日任务支持计时")
     task.timer_total_seconds = body.total_seconds
     db.commit()
     return {"timer_total_seconds": body.total_seconds}
-
-
-@router.get("/stats/overview")
-def get_stats_overview(db: Session = Depends(get_db)):
-    base = select(Task).where(
-        Task.owner_id == OWNER_ID,
-        Task.parent_id.is_(None),
-    )
-    all_tasks = db.execute(base).scalars().all()
-
-    by_status = {"todo": 0, "in_progress": 0, "done": 0}
-    by_priority = {"high": 0, "medium": 0, "low": 0}
-
-    for t in all_tasks:
-        if t.status in by_status:
-            by_status[t.status] += 1
-        if t.priority in by_priority:
-            by_priority[t.priority] += 1
-
-    return {
-        "total": len(all_tasks),
-        "by_status": by_status,
-        "by_priority": by_priority,
-    }
-
-
-@router.get("/stats/trend")
-def get_stats_trend(db: Session = Depends(get_db)):
-    from datetime import date, timedelta
-
-    today = date.today()
-    result = []
-    for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
-        count = db.execute(
-            select(Task).where(
-                Task.owner_id == OWNER_ID,
-                Task.status == "done",
-                Task.parent_id.is_(None),
-                Task.updated_at >= d.isoformat(),
-                Task.updated_at < (d + timedelta(days=1)).isoformat(),
-            )
-        ).scalars().all()
-        result.append({"date": d.isoformat(), "count": len(count)})
-
-    return {"daily_completed": result}

@@ -9,12 +9,26 @@ import {
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, Popconfirm, Select, Spin } from "antd";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { deleteNote, fetchNotes, importFile } from "../api/notes";
 import type { Note } from "../types/note";
 import EmptyState from "../components/ui/EmptyState";
+
+function plainTextSummary(content: string) {
+  return content
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|pre)>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+}
 
 function NoteCard({ note, delay }: { note: Note; delay: number }) {
   const navigate = useNavigate();
@@ -52,7 +66,7 @@ function NoteCard({ note, delay }: { note: Note; delay: number }) {
       {/* 摘要 */}
       {note.content && (
         <div style={{ fontSize: 13, color: "#999", lineHeight: 1.6, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-          {note.content.slice(0, 120)}
+          {plainTextSummary(note.content)}
         </div>
       )}
 
@@ -102,6 +116,7 @@ export default function NotesListPage() {
     queryKey: ["notes", { search, category }],
     queryFn: () => fetchNotes({ search: search || undefined, category: category || undefined }),
   });
+  const visibleNotes = (notes || []).filter((note) => note.domain !== "experience");
 
   const handleImportChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,10 +179,10 @@ export default function NotesListPage() {
         </div>
       </div>
 
-      <Spin spinning={isLoading}>
-        {notes && notes.length > 0 ? (
+      <Spin spinning={isLoading || importing}>
+        {visibleNotes.length > 0 ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
-            {notes.map((n, i) => (
+            {visibleNotes.map((n, i) => (
               <NoteCard key={n.id} note={n} delay={i * 0.04} />
             ))}
           </div>

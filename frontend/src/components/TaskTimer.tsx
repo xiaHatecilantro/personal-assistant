@@ -31,9 +31,10 @@ export default function TaskTimer({ task }: Props) {
   // 同步外部计时变化
   useEffect(() => {
     if (!running && task.timer_total_seconds !== elapsed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setElapsed(task.timer_total_seconds || 0);
     }
-  }, [task.timer_total_seconds]);
+  }, [elapsed, running, task.timer_total_seconds]);
 
   const stopInterval = useCallback(() => {
     if (intervalRef.current) {

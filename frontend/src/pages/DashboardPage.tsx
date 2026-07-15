@@ -16,7 +16,7 @@ import TaskBoard from "../components/ui/agent-plan";
 import { fetchTasks } from "../api/tasks";
 import type { Task as TaskType } from "../types/task";
 import { useContext } from "react";
-import { ThemeModeContext } from "../App";
+import { ThemeModeContext } from "../themeModeContext";
 import EmptyState from "../components/ui/EmptyState";
 
 interface Overview {

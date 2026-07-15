@@ -1,19 +1,20 @@
-import asyncio, hashlib, io, json, os
-from datetime import datetime
+import hashlib
+import io
+import json
+import os
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user
 from app.config import get_db
-from app.models import Note, RawSource
+from app.models import Note, RawSource, User
 
 router = APIRouter(prefix="/api/v1", tags=["knowledge"])
-
-OWNER_ID = 1
 
 
 # ── Pydantic schemas ──
@@ -22,7 +23,7 @@ class NoteCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     content: str = ""
     category: str | None = None
-    tags: list[str] = []
+    tags: list[str] = Field(default_factory=list)
     source_url: str | None = None
     domain: str | None = None
     is_pinned: bool = False
@@ -32,7 +33,7 @@ class NoteUpdate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     content: str = ""
     category: str | None = None
-    tags: list[str] = []
+    tags: list[str] = Field(default_factory=list)
     source_url: str | None = None
     domain: str | None = None
     is_pinned: bool = False
@@ -98,7 +99,10 @@ def _parse_html(raw: str) -> str:
 SUPPORTED_EXTENSIONS = {".md", ".txt", ".docx", ".pptx", ".pdf", ".html", ".htm"}
 
 @router.post("/knowledge/import")
-async def import_file(file: UploadFile = File(...)):
+async def import_file(
+    file: UploadFile = File(...),
+    _current_user: User = Depends(get_current_user),
+):
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in SUPPORTED_EXTENSIONS:
         raise HTTPException(400, f"不支持的格式: {ext}。支持: {', '.join(sorted(SUPPORTED_EXTENSIONS))}")
@@ -139,22 +143,21 @@ def list_notes(
     tag: str | None = None,
     search: str | None = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    stmt = select(Note).where(Note.owner_id == current_user.id)
     if search:
-        stmt = (
-            select(Note)
-            .where(
-                Note.title.contains(search) | Note.content.contains(search)
-            )
-            .order_by(Note.updated_at.desc())
+        stmt = stmt.where(
+            Note.title.contains(search) | Note.content.contains(search)
         )
     else:
-        stmt = select(Note).where(Note.owner_id == OWNER_ID)
         if category:
             stmt = stmt.where(Note.category == category)
         if domain:
             stmt = stmt.where(Note.domain == domain)
         stmt = stmt.order_by(Note.is_pinned.desc(), Note.updated_at.desc())
+    if search:
+        stmt = stmt.order_by(Note.updated_at.desc())
 
     if tag:
         notes = db.execute(stmt).scalars().all()
@@ -166,9 +169,13 @@ def list_notes(
 
 
 @router.post("/notes", status_code=201)
-def create_note(body: NoteCreate, db: Session = Depends(get_db)):
+def create_note(
+    body: NoteCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     note = Note(
-        owner_id=OWNER_ID, title=body.title, content=body.content,
+        owner_id=current_user.id, title=body.title, content=body.content,
         category=body.category, tags=json.dumps(body.tags, ensure_ascii=False),
         wikilinks=json.dumps(_extract_wikilinks(body.content), ensure_ascii=False),
         source_url=body.source_url, domain=body.domain,
@@ -181,17 +188,26 @@ def create_note(body: NoteCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/notes/{note_id}")
-def get_note(note_id: int, db: Session = Depends(get_db)):
+def get_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     note = db.get(Note, note_id)
-    if not note or note.owner_id != OWNER_ID:
+    if not note or note.owner_id != current_user.id:
         raise HTTPException(404, "笔记不存在")
     return _note_out(note)
 
 
 @router.put("/notes/{note_id}")
-def update_note(note_id: int, body: NoteUpdate, db: Session = Depends(get_db)):
+def update_note(
+    note_id: int,
+    body: NoteUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     note = db.get(Note, note_id)
-    if not note or note.owner_id != OWNER_ID:
+    if not note or note.owner_id != current_user.id:
         raise HTTPException(404, "笔记不存在")
     note.title, note.content = body.title, body.content
     note.category, note.domain = body.category, body.domain
@@ -204,9 +220,13 @@ def update_note(note_id: int, body: NoteUpdate, db: Session = Depends(get_db)):
 
 
 @router.delete("/notes/{note_id}", status_code=204)
-def delete_note(note_id: int, db: Session = Depends(get_db)):
+def delete_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     note = db.get(Note, note_id)
-    if not note or note.owner_id != OWNER_ID:
+    if not note or note.owner_id != current_user.id:
         raise HTTPException(404, "笔记不存在")
     db.delete(note)
     db.commit()
@@ -222,16 +242,23 @@ def _extract_wikilinks(md: str) -> list[str]:
 # ── RAW SOURCE 摄入 ──
 
 @router.post("/knowledge/ingest", status_code=201)
-def ingest_raw(body: RawIngest, db: Session = Depends(get_db)):
+def ingest_raw(
+    body: RawIngest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     h = hashlib.sha256(body.content.encode()).hexdigest()[:16]
     existing = db.execute(
-        select(RawSource).where(RawSource.content_hash == h)
+        select(RawSource).where(
+            RawSource.owner_id == current_user.id,
+            RawSource.content_hash == h,
+        )
     ).scalar()
     if existing:
         raise HTTPException(409, "内容已存在，hash=" + h)
 
     src = RawSource(
-        owner_id=OWNER_ID, title=body.title, content=body.content,
+        owner_id=current_user.id, title=body.title, content=body.content,
         source_url=body.source_url, content_hash=h,
     )
     db.add(src)
@@ -245,10 +272,14 @@ def ingest_raw(body: RawIngest, db: Session = Depends(get_db)):
 
 
 @router.post("/knowledge/compile/{source_id}")
-def compile_source(source_id: int, db: Session = Depends(get_db)):
+def compile_source(
+    source_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """LLM 蒸馏入口（待接入）"""
     src = db.get(RawSource, source_id)
-    if not src:
+    if not src or src.owner_id != current_user.id:
         raise HTTPException(404, "源材料不存在")
     return {
         "status": "not_configured",
@@ -260,7 +291,10 @@ def compile_source(source_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/knowledge/query")
-def query_knowledge(q: str = Query(..., min_length=1)):  # GET with query param
+def query_knowledge(
+    q: str = Query(..., min_length=1),
+    _current_user: User = Depends(get_current_user),
+):
     """向知识库提问（待接入 LLM）"""
     return {
         "status": "not_configured",
@@ -270,16 +304,24 @@ def query_knowledge(q: str = Query(..., min_length=1)):  # GET with query param
 
 
 @router.post("/knowledge/lint")
-def lint_knowledge(db: Session = Depends(get_db)):
+def lint_knowledge(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """健康检查（待接入 LLM）"""
-    notes = db.execute(select(Note).where(Note.owner_id == OWNER_ID)).scalars().all()
+    notes = db.execute(select(Note).where(Note.owner_id == current_user.id)).scalars().all()
     issues = []
 
     # 基础检查（不依赖 LLM）
     for n in notes:
         links = json.loads(n.wikilinks or "[]")
         for link in links:
-            found = db.execute(select(Note).where(Note.title == link)).scalar()
+            found = db.execute(
+                select(Note).where(
+                    Note.owner_id == current_user.id,
+                    Note.title == link,
+                )
+            ).scalar()
             if not found:
                 issues.append({"type": "broken_link", "page": n.title, "target": link})
 
@@ -291,14 +333,18 @@ def lint_knowledge(db: Session = Depends(get_db)):
 
 
 @router.get("/knowledge/graph")
-def knowledge_graph(db: Session = Depends(get_db)):
+def knowledge_graph(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """知识图谱（节点 + 边）"""
-    notes = db.execute(select(Note).where(Note.owner_id == OWNER_ID)).scalars().all()
+    notes = db.execute(select(Note).where(Note.owner_id == current_user.id)).scalars().all()
     nodes = [{"id": n.id, "title": n.title, "domain": n.domain, "category": n.category} for n in notes]
     edges = []
+    notes_by_title = {note.title: note for note in notes}
     for n in notes:
         for link in json.loads(n.wikilinks or "[]"):
-            target = next((x for x in notes if x.title == link), None)
+            target = notes_by_title.get(link)
             if target:
                 edges.append({"source": n.id, "target": target.id, "label": link})
     return {"nodes": nodes, "edges": edges}
@@ -311,11 +357,11 @@ class ChatMessage(BaseModel):
     file_path: str | None = None
 
 
-def _build_chat_messages(body: ChatMessage, db: Session) -> list[dict]:
+def _build_chat_messages(body: ChatMessage, db: Session, user_id: int) -> list[dict]:
     """构造发给 LLM 的 messages 列表，注入知识库上下文"""
     system_parts = ["你是个人知识管理助手。用中文回复，简洁准确。"]
     notes = db.execute(
-        select(Note).where(Note.owner_id == OWNER_ID).order_by(Note.updated_at.desc()).limit(20)
+        select(Note).where(Note.owner_id == user_id).order_by(Note.updated_at.desc()).limit(20)
     ).scalars().all()
     if notes:
         ctx = "\n".join(f"- [{n.title}] {n.content[:300]}" for n in notes)
@@ -335,7 +381,11 @@ def _sse_chunk(token: str) -> str:
 
 
 @router.post("/knowledge/chat")
-def chat_with_knowledge(body: ChatMessage, db: Session = Depends(get_db)):
+def chat_with_knowledge(
+    body: ChatMessage,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """AI 对话（SSE 流式，需要前端传入 model_config）"""
     if not body.provider_config or not body.provider_config.get("apiKey"):
         raise HTTPException(400, "请在模型设置中配置 API Key")
@@ -343,7 +393,7 @@ def chat_with_knowledge(body: ChatMessage, db: Session = Depends(get_db)):
     mc = body.provider_config
     client = OpenAI(base_url=mc["baseUrl"], api_key=mc["apiKey"])
 
-    messages = _build_chat_messages(body, db)
+    messages = _build_chat_messages(body, db, current_user.id)
 
     try:
         stream = client.chat.completions.create(

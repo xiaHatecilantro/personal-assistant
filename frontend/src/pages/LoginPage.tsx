@@ -1,28 +1,87 @@
 import { ScheduleOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
-import { App, Button, Form, Input, Typography } from "antd";
+import { App, Button, Checkbox, Form, Input, Typography } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import client from "../api/client";
 import { useAuthStore } from "../store/authStore";
-import { useContext } from "react";
-import { ThemeModeContext } from "../App";
+import { useContext, useEffect, useRef } from "react";
+import { ThemeModeContext } from "../themeModeContext";
 
-interface LoginData { username: string; password: string }
+interface LoginData {
+  username: string;
+  password: string;
+  rememberPassword?: boolean;
+  autoLogin?: boolean;
+}
+
+const SAVED_LOGIN_KEY = "saved-login";
+
+interface SavedLogin {
+  username: string;
+  password: string;
+  rememberPassword: boolean;
+  autoLogin: boolean;
+}
+
+function loadSavedLogin(): SavedLogin | null {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_LOGIN_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function saveLoginPreference(data: LoginData) {
+  if (!data.rememberPassword) {
+    localStorage.removeItem(SAVED_LOGIN_KEY);
+    return;
+  }
+  const saved: SavedLogin = {
+    username: data.username,
+    password: data.password,
+    rememberPassword: true,
+    autoLogin: Boolean(data.autoLogin),
+  };
+  localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify(saved));
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { token, setAuth } = useAuthStore();
   const { message } = App.useApp();
   const { themeMode } = useContext(ThemeModeContext);
   const isDark = themeMode === "dark";
+  const [form] = Form.useForm<LoginData>();
+  const autoLoginStarted = useRef(false);
+  const savedLogin = loadSavedLogin();
 
   const mutation = useMutation({
-    mutationFn: (data: LoginData) =>
-      client.post("/auth/login", data) as Promise<{ token: string; user: { id: number; username: string } }>,
-    onSuccess: (res) => { setAuth(res.token, res.user); message.success("登录成功"); navigate("/"); },
+    mutationFn: (data: LoginData) => {
+      const { username, password } = data;
+      return client.post("/auth/login", { username, password }) as Promise<{ token: string; user: { id: number; username: string } }>;
+    },
+    onSuccess: (res, variables) => {
+      saveLoginPreference(variables);
+      setAuth(res.token, res.user);
+      message.success("登录成功");
+      navigate("/");
+    },
     onError: () => { message.error("用户名或密码错误"); },
   });
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
+
+  useEffect(() => {
+    if (!savedLogin?.autoLogin || autoLoginStarted.current || token) return;
+    autoLoginStarted.current = true;
+    form.setFieldsValue(savedLogin);
+    mutation.mutate(savedLogin);
+  }, [form, mutation, savedLogin, token]);
 
   return (
     <div style={{
@@ -55,17 +114,45 @@ export default function LoginPage() {
           <Typography.Title level={3} style={{ margin: 0, color: isDark ? "#e6edf3" : "#1a1a1a" }}>
             个人事务助理
           </Typography.Title>
-          <Typography.Text style={{ fontSize: 13, color: isDark ? "#8b949e" : "#999" }}>
-            寻流而上，自我进化
-          </Typography.Text>
         </div>
 
-        <Form layout="vertical" onFinish={(values) => mutation.mutate(values)} size="large">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={(values) => mutation.mutate(values)}
+          onValuesChange={(changedValues) => {
+            if (changedValues.rememberPassword === false) {
+              form.setFieldValue("autoLogin", false);
+            }
+          }}
+          size="large"
+          initialValues={{
+            username: savedLogin?.username,
+            password: savedLogin?.password,
+            rememberPassword: savedLogin?.rememberPassword ?? false,
+            autoLogin: savedLogin?.autoLogin ?? false,
+          }}
+        >
           <Form.Item name="username" rules={[{ required: true, message: "请输入用户名" }]}>
             <Input placeholder="用户名" style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
             <Input.Password placeholder="密码" style={{ borderRadius: 10 }} />
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, next) => prev.rememberPassword !== next.rememberPassword}>
+            {({ getFieldValue }) => {
+              const rememberPassword = Boolean(getFieldValue("rememberPassword"));
+              return (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
+                  <Form.Item name="rememberPassword" valuePropName="checked" noStyle>
+                    <Checkbox>记住密码</Checkbox>
+                  </Form.Item>
+                  <Form.Item name="autoLogin" valuePropName="checked" noStyle>
+                    <Checkbox disabled={!rememberPassword}>自动登录</Checkbox>
+                  </Form.Item>
+                </div>
+              );
+            }}
           </Form.Item>
           <Form.Item style={{ marginBottom: 8 }}>
             <Button type="primary" htmlType="submit" loading={mutation.isPending} block

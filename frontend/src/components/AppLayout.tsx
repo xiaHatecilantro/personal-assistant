@@ -1,5 +1,6 @@
 import {
   BookOutlined,
+  BulbOutlined,
   CheckSquareOutlined,
   DashboardOutlined,
   LogoutOutlined,
@@ -8,12 +9,12 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
-import { useContext, useMemo } from "react";
+import { useContext } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitch } from "@lobehub/ui";
 import { useAuthStore } from "../store/authStore";
-import { ThemeModeContext } from "../App";
+import { ThemeModeContext } from "../themeModeContext";
 
 /* ── 底部 Tab 定义 ── */
 
@@ -21,6 +22,7 @@ const tabs = [
   { path: "/", label: "首页", icon: DashboardOutlined },
   { path: "/chat", label: "对话", icon: MessageOutlined },
   { path: "/notes", label: "知识库", icon: BookOutlined },
+  { path: "/experience", label: "经验", icon: BulbOutlined },
   { path: "/tasks", label: "任务", icon: CheckSquareOutlined },
 ];
 
@@ -56,6 +58,7 @@ function FloatingAdd() {
         items: [
           { key: "task", icon: <CheckSquareOutlined />, label: "新建任务", onClick: () => navigate("/tasks/new") },
           { key: "note", icon: <BookOutlined />, label: "新建笔记", onClick: () => navigate("/notes/new") },
+          { key: "experience", icon: <BulbOutlined />, label: "新建便签", onClick: () => navigate("/notes/new/edit?domain=experience&from=experience") },
         ],
       }}
     >
@@ -97,15 +100,7 @@ export default function AppLayout() {
   const { themeMode, setThemeMode } = useContext(ThemeModeContext);
   const isDark = themeMode === "dark";
 
-  const pageTitle = useMemo(() => {
-    for (const t of tabs) {
-      if (t.path === "/") continue;
-      if (location.pathname.startsWith(t.path)) return t.label;
-    }
-    return "首页";
-  }, [location.pathname]);
-
-  const showFAB = location.pathname === "/" || location.pathname === "/tasks";
+  const showFAB = location.pathname === "/" || location.pathname === "/tasks" || location.pathname === "/experience";
 
   return (
     <div
@@ -141,7 +136,10 @@ export default function AppLayout() {
 
         {/* 右侧操作 */}
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <ThemeSwitch themeMode={themeMode} onThemeSwitch={setThemeMode} />
+          <ThemeSwitch
+            themeMode={themeMode}
+            onThemeSwitch={(mode) => setThemeMode(mode === "dark" ? "dark" : "light")}
+          />
           {user ? (
             <Dropdown
               menu={{

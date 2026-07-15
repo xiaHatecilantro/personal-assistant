@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function ModelSettings({ open, onClose }: Props) {
-  const { models, addModel, removeModel, updateModel, activeModelId, setActive } =
+  const { models, addModel, removeModel, activeModelId, setActive } =
     useModelStore();
   const [adding, setAdding] = useState(false);
   const [form] = Form.useForm();

@@ -1,16 +1,17 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pathlib import Path
+
+from app.auth import get_current_user
+from app.models import User
 
 router = APIRouter(prefix="/api/v1/files", tags=["files"])
 
 ALLOWED_ROOTS = [
-    os.path.expanduser("~").replace("\\", "/"),
-    "D:\\",
-    "D:/",
-    "C:\\Users",
-    "C:/Users",
+    root.strip()
+    for root in os.getenv("FILE_ALLOWED_ROOTS", os.path.expanduser("~")).split(os.pathsep)
+    if root.strip()
 ]
 
 MAX_DEPTH = 4
@@ -71,7 +72,7 @@ def _build_tree(path: str, depth: int = 0) -> list[dict]:
 
 
 @router.get("/roots")
-def list_roots():
+def list_roots(_current_user: User = Depends(get_current_user)):
     result = []
     seen = set()
     for r in ALLOWED_ROOTS:
@@ -98,7 +99,10 @@ def list_roots():
 
 
 @router.get("/tree")
-def get_tree(path: str = Query(...)):
+def get_tree(
+    path: str = Query(...),
+    _current_user: User = Depends(get_current_user),
+):
     abs_path = os.path.abspath(path)
     if not _is_allowed(abs_path):
         raise HTTPException(403, f"无权访问: {abs_path}")
@@ -115,7 +119,10 @@ def get_tree(path: str = Query(...)):
 
 
 @router.get("/read")
-def read_file(path: str = Query(...)):
+def read_file(
+    path: str = Query(...),
+    _current_user: User = Depends(get_current_user),
+):
     abs_path = os.path.abspath(path)
     if not _is_allowed(abs_path):
         raise HTTPException(403, f"无权访问: {abs_path}")

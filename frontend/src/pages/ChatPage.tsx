@@ -85,11 +85,11 @@ export default function ChatPage() {
         fileContent: selectedFileContent || undefined,
         filePath: selectedFileName || undefined,
       })) {
+        content += token;
         if (!msgAdded) {
-          setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: token, time: fmt() }]);
+          setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content, time: fmt() }]);
           msgAdded = true;
         } else {
-          content += token;
           setMessages((prev) =>
             prev.map((m) => (m.id === assistantId ? { ...m, content } : m)),
           );

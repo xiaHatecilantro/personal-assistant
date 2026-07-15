@@ -46,7 +46,11 @@ export default function NoteTree({ notes, onSelect }: Props) {
   const toggle = (name: string) =>
     setExpanded((prev) => {
       const n = new Set(prev);
-      n.has(name) ? n.delete(name) : n.add(name);
+      if (n.has(name)) {
+        n.delete(name);
+      } else {
+        n.add(name);
+      }
       return n;
     });
 

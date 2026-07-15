@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import client from "../api/client";
 import { useAuthStore } from "../store/authStore";
 import { useContext } from "react";
-import { ThemeModeContext } from "../App";
+import { ThemeModeContext } from "../themeModeContext";
 
 interface RegisterData { username: string; password: string }
 

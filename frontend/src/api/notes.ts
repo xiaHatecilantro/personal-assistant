@@ -1,6 +1,25 @@
 import client from "./client";
 import type { Note } from "../types/note";
 
+export interface KnowledgeIssue {
+  type: string;
+  page?: string;
+  target?: string;
+}
+
+export interface KnowledgeGraphNode {
+  id: number;
+  title: string;
+  domain: string | null;
+  category: string | null;
+}
+
+export interface KnowledgeGraphEdge {
+  source: number;
+  target: number;
+  label: string;
+}
+
 export function fetchNotes(params?: {
   category?: string;
   domain?: string;
@@ -70,10 +89,10 @@ export function queryKnowledge(q: string): Promise<{ status: string; query: stri
   return client.get("/knowledge/query", { params: { q } });
 }
 
-export function lintKnowledge(): Promise<{ total_pages: number; issues: any[]; hint: string }> {
+export function lintKnowledge(): Promise<{ total_pages: number; issues: KnowledgeIssue[]; hint: string }> {
   return client.post("/knowledge/lint");
 }
 
-export function fetchKnowledgeGraph(): Promise<{ nodes: any[]; edges: any[] }> {
+export function fetchKnowledgeGraph(): Promise<{ nodes: KnowledgeGraphNode[]; edges: KnowledgeGraphEdge[] }> {
   return client.get("/knowledge/graph");
 }

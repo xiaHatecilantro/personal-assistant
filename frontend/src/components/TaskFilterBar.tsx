@@ -1,11 +1,13 @@
 import { useFilterStore } from "../store/filterStore";
 
+type FilterState = ReturnType<typeof useFilterStore.getState>;
+
 const filterGroups = [
   {
     key: "status" as const,
     label: "状态",
-    setter: (s: typeof useFilterStore.getState) => s.setStatus,
-    getter: (s: typeof useFilterStore.getState) => s.status,
+    setter: (s: FilterState) => s.setStatus,
+    getter: (s: FilterState) => s.status,
     options: [
       { value: "", label: "全部" },
       { value: "todo", label: "待办" },
@@ -16,8 +18,8 @@ const filterGroups = [
   {
     key: "priority" as const,
     label: "优先级",
-    setter: (s: typeof useFilterStore.getState) => s.setPriority,
-    getter: (s: typeof useFilterStore.getState) => s.priority,
+    setter: (s: FilterState) => s.setPriority,
+    getter: (s: FilterState) => s.priority,
     options: [
       { value: "", label: "全部" },
       { value: "high", label: "高" },
@@ -28,8 +30,8 @@ const filterGroups = [
   {
     key: "tag" as const,
     label: "标签",
-    setter: (s: typeof useFilterStore.getState) => s.setTag,
-    getter: (s: typeof useFilterStore.getState) => s.tag,
+    setter: (s: FilterState) => s.setTag,
+    getter: (s: FilterState) => s.tag,
     options: [
       { value: "", label: "全部" },
       { value: "学习", label: "学习" },

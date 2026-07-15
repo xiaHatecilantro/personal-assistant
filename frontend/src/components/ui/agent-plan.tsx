@@ -46,13 +46,17 @@ export default function TaskBoard({ tasks }: Props) {
   const toggleSection = (k: string) =>
     setCollapsed((p) => {
       const n = new Set(p);
-      n.has(k) ? n.delete(k) : n.add(k);
+      if (n.has(k)) {
+        n.delete(k);
+      } else {
+        n.add(k);
+      }
       return n;
     });
 
   return (
     <div className="flex flex-col">
-      {ORDER.map((key, idx) => {
+      {ORDER.map((key) => {
         const items = grouped[key] || [];
         const closed = collapsed.has(key);
 
@@ -113,7 +117,11 @@ export default function TaskBoard({ tasks }: Props) {
                             onToggle={() =>
                               setExpanded((p) => {
                                 const n = new Set(p);
-                                n.has(task.id) ? n.delete(task.id) : n.add(task.id);
+                                if (n.has(task.id)) {
+                                  n.delete(task.id);
+                                } else {
+                                  n.add(task.id);
+                                }
                                 return n;
                               })
                             }
