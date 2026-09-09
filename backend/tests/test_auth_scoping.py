@@ -95,3 +95,25 @@ def test_file_roots_require_authentication():
     response = client.get("/api/v1/files/roots")
 
     assert response.status_code == 401
+
+
+def test_health_endpoints_report_application_and_database_readiness():
+    assert client.get("/health/live").json() == {"status": "ok"}
+    assert client.get("/health/ready").json() == {"status": "ok"}
+
+
+def test_deleting_parent_task_cascades_to_subtasks():
+    headers = register_user("cascade")
+    parent = client.post(
+        "/api/v1/tasks",
+        json={"title": "Parent", "task_type": "long_term"},
+        headers=headers,
+    ).json()
+    child = client.post(
+        "/api/v1/tasks",
+        json={"title": "Child", "parent_id": parent["id"]},
+        headers=headers,
+    ).json()
+
+    assert client.delete(f"/api/v1/tasks/{parent['id']}", headers=headers).status_code == 204
+    assert client.get(f"/api/v1/tasks/{child['id']}", headers=headers).status_code == 404

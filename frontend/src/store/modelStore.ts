@@ -46,6 +46,22 @@ const DEFAULTS: ModelConfig[] = [
   },
 ];
 
+const STORAGE_KEY = "model-config";
+
+function clearPersistedApiKeys() {
+  try {
+    const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    const models = persisted?.state?.models;
+    if (!Array.isArray(models)) return;
+    persisted.state.models = models.map((model: ModelConfig) => ({ ...model, apiKey: "" }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+clearPersistedApiKeys();
+
 export const useModelStore = create<ModelState>()(
   persist(
     (set) => ({
@@ -69,6 +85,20 @@ export const useModelStore = create<ModelState>()(
           models: s.models.map((m) => (m.id === id ? { ...m, ...updates } : m)),
         })),
     }),
-    { name: "model-config" },
+    {
+      name: STORAGE_KEY,
+      partialize: (state) => ({
+        ...state,
+        models: state.models.map((model) => ({ ...model, apiKey: "" })),
+      }),
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<ModelState>;
+        return {
+          ...current,
+          ...saved,
+          models: (saved.models || current.models).map((model) => ({ ...model, apiKey: "" })),
+        };
+      },
+    },
   ),
 );

@@ -5,14 +5,11 @@ from pathlib import Path
 
 from app.auth import get_current_user
 from app.models import User
+from app.settings import get_settings
 
 router = APIRouter(prefix="/api/v1/files", tags=["files"])
 
-ALLOWED_ROOTS = [
-    root.strip()
-    for root in os.getenv("FILE_ALLOWED_ROOTS", os.path.expanduser("~")).split(os.pathsep)
-    if root.strip()
-]
+ALLOWED_ROOTS = list(get_settings().file_allowed_roots)
 
 MAX_DEPTH = 4
 MAX_FILES_PER_DIR = 200
@@ -22,12 +19,23 @@ _pool = ThreadPoolExecutor(max_workers=2)
 
 
 def _is_allowed(abs_path: str) -> bool:
-    p = abs_path.replace("\\", "/").lower()
-    for r in ALLOWED_ROOTS:
-        rn = r.replace("\\", "/").lower()
-        if p.startswith(rn):
-            return True
+    try:
+        path = Path(abs_path).expanduser().resolve()
+        for root in ALLOWED_ROOTS:
+            root_path = f"{root}{os.sep}" if len(root) == 2 and root[1] == ":" else root
+            allowed_root = Path(root_path).expanduser().resolve()
+            if path == allowed_root or allowed_root in path.parents:
+                return True
+    except (OSError, RuntimeError):
+        return False
     return False
+
+
+def _contains_hidden_path(abs_path: str) -> bool:
+    try:
+        return any(part.startswith(".") for part in Path(abs_path).resolve().parts)
+    except (OSError, RuntimeError):
+        return True
 
 
 def _build_tree(path: str, depth: int = 0) -> list[dict]:
@@ -105,7 +113,9 @@ def get_tree(
 ):
     abs_path = os.path.abspath(path)
     if not _is_allowed(abs_path):
-        raise HTTPException(403, f"无权访问: {abs_path}")
+        raise HTTPException(403, "无权访问该路径")
+    if _contains_hidden_path(abs_path):
+        raise HTTPException(403, "不允许访问隐藏目录")
     if not os.path.isdir(abs_path):
         raise HTTPException(404, "目录不存在")
 
@@ -125,7 +135,9 @@ def read_file(
 ):
     abs_path = os.path.abspath(path)
     if not _is_allowed(abs_path):
-        raise HTTPException(403, f"无权访问: {abs_path}")
+        raise HTTPException(403, "无权访问该路径")
+    if _contains_hidden_path(abs_path):
+        raise HTTPException(403, "不允许读取隐藏文件")
     if not os.path.isfile(abs_path):
         raise HTTPException(404, "文件不存在")
     size = os.path.getsize(abs_path)

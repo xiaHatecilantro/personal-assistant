@@ -12,22 +12,18 @@ interface AuthState {
   logout: () => void;
 }
 
-const SAVED_LOGIN_KEY = "saved-login";
-
-function disableAutoLogin() {
+function loadUser(): User | null {
   try {
-    const saved = JSON.parse(localStorage.getItem(SAVED_LOGIN_KEY) || "null");
-    if (saved) {
-      localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify({ ...saved, autoLogin: false }));
-    }
+    return JSON.parse(localStorage.getItem("user") || "null") as User | null;
   } catch {
-    localStorage.removeItem(SAVED_LOGIN_KEY);
+    localStorage.removeItem("user");
+    return null;
   }
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem("token"),
-  user: JSON.parse(localStorage.getItem("user") || "null"),
+  user: loadUser(),
   setAuth: (token, user) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
@@ -36,7 +32,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    disableAutoLogin();
     set({ token: null, user: null });
   },
 }));

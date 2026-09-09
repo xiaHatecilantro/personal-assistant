@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -9,10 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.config import get_db
 from app.models import User
+from app.settings import get_settings
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
+SECRET_KEY = get_settings().jwt_secret_key
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = get_settings().jwt_expire_minutes
 
 security = HTTPBearer(auto_error=False)
 

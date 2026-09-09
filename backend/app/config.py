@@ -1,25 +1,22 @@
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
-load_dotenv()
+from app.settings import get_settings
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL and os.getenv("DB_PASSWORD"):
-    DATABASE_URL = (
-        f"mysql+pymysql://root:{os.environ['DB_PASSWORD']}"
-        "@localhost:3307/personal_assistant?charset=utf8mb4&ssl_disabled=true"
-    )
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL or DB_PASSWORD must be set")
+
+DATABASE_URL = get_settings().database_url
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
-SessionLocal = sessionmaker(bind=engine)
+engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
+
+if DATABASE_URL.startswith("sqlite"):
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 Base = declarative_base()
 
 
@@ -27,5 +24,8 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()

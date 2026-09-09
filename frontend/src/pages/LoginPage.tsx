@@ -1,60 +1,65 @@
 import { ScheduleOutlined } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Checkbox, Form, Input, Typography } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import client from "../api/client";
 import { useAuthStore } from "../store/authStore";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { ThemeModeContext } from "../themeModeContext";
 
 interface LoginData {
   username: string;
   password: string;
-  rememberPassword?: boolean;
-  autoLogin?: boolean;
+  rememberUsername?: boolean;
 }
 
 const SAVED_LOGIN_KEY = "saved-login";
 
 interface SavedLogin {
   username: string;
-  password: string;
-  rememberPassword: boolean;
-  autoLogin: boolean;
+  rememberUsername: boolean;
 }
 
 function loadSavedLogin(): SavedLogin | null {
   try {
-    return JSON.parse(localStorage.getItem(SAVED_LOGIN_KEY) || "null");
+    const parsed = JSON.parse(localStorage.getItem(SAVED_LOGIN_KEY) || "null");
+    if (!parsed?.username) {
+      localStorage.removeItem(SAVED_LOGIN_KEY);
+      return null;
+    }
+    const saved = { username: String(parsed.username), rememberUsername: true };
+    localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify(saved));
+    return saved;
   } catch {
+    localStorage.removeItem(SAVED_LOGIN_KEY);
     return null;
   }
 }
 
 function saveLoginPreference(data: LoginData) {
-  if (!data.rememberPassword) {
+  if (!data.rememberUsername) {
     localStorage.removeItem(SAVED_LOGIN_KEY);
     return;
   }
   const saved: SavedLogin = {
     username: data.username,
-    password: data.password,
-    rememberPassword: true,
-    autoLogin: Boolean(data.autoLogin),
+    rememberUsername: true,
   };
   localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify(saved));
 }
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const location = useLocation();
   const { token, setAuth } = useAuthStore();
   const { message } = App.useApp();
   const { themeMode } = useContext(ThemeModeContext);
   const isDark = themeMode === "dark";
   const [form] = Form.useForm<LoginData>();
-  const autoLoginStarted = useRef(false);
   const savedLogin = loadSavedLogin();
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || "/";
 
   const mutation = useMutation({
     mutationFn: (data: LoginData) => {
@@ -63,25 +68,19 @@ export default function LoginPage() {
     },
     onSuccess: (res, variables) => {
       saveLoginPreference(variables);
+      queryClient.clear();
       setAuth(res.token, res.user);
       message.success("登录成功");
-      navigate("/");
+      navigate(from, { replace: true });
     },
     onError: () => { message.error("用户名或密码错误"); },
   });
 
   useEffect(() => {
     if (token) {
-      navigate("/");
+      navigate(from, { replace: true });
     }
-  }, [token, navigate]);
-
-  useEffect(() => {
-    if (!savedLogin?.autoLogin || autoLoginStarted.current || token) return;
-    autoLoginStarted.current = true;
-    form.setFieldsValue(savedLogin);
-    mutation.mutate(savedLogin);
-  }, [form, mutation, savedLogin, token]);
+  }, [from, token, navigate]);
 
   return (
     <div style={{
@@ -120,17 +119,10 @@ export default function LoginPage() {
           form={form}
           layout="vertical"
           onFinish={(values) => mutation.mutate(values)}
-          onValuesChange={(changedValues) => {
-            if (changedValues.rememberPassword === false) {
-              form.setFieldValue("autoLogin", false);
-            }
-          }}
           size="large"
           initialValues={{
             username: savedLogin?.username,
-            password: savedLogin?.password,
-            rememberPassword: savedLogin?.rememberPassword ?? false,
-            autoLogin: savedLogin?.autoLogin ?? false,
+            rememberUsername: savedLogin?.rememberUsername ?? false,
           }}
         >
           <Form.Item name="username" rules={[{ required: true, message: "请输入用户名" }]}>
@@ -139,21 +131,11 @@ export default function LoginPage() {
           <Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
             <Input.Password placeholder="密码" style={{ borderRadius: 10 }} />
           </Form.Item>
-          <Form.Item noStyle shouldUpdate={(prev, next) => prev.rememberPassword !== next.rememberPassword}>
-            {({ getFieldValue }) => {
-              const rememberPassword = Boolean(getFieldValue("rememberPassword"));
-              return (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
-                  <Form.Item name="rememberPassword" valuePropName="checked" noStyle>
-                    <Checkbox>记住密码</Checkbox>
-                  </Form.Item>
-                  <Form.Item name="autoLogin" valuePropName="checked" noStyle>
-                    <Checkbox disabled={!rememberPassword}>自动登录</Checkbox>
-                  </Form.Item>
-                </div>
-              );
-            }}
-          </Form.Item>
+          <div style={{ marginBottom: 18 }}>
+            <Form.Item name="rememberUsername" valuePropName="checked" noStyle>
+              <Checkbox>记住账号</Checkbox>
+            </Form.Item>
+          </div>
           <Form.Item style={{ marginBottom: 8 }}>
             <Button type="primary" htmlType="submit" loading={mutation.isPending} block
               style={{ borderRadius: 10, height: 44, fontSize: 15 }}>

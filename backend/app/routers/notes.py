@@ -1,20 +1,26 @@
+import asyncio
 import hashlib
-import io
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.config import get_db
 from app.models import Note, RawSource, User
+from app.services.chat import build_chat_messages, sse_chunk, validate_base_url
+from app.services.document_parser import SUPPORTED_EXTENSIONS, parse_document_isolated
+from app.settings import get_settings
 
 router = APIRouter(prefix="/api/v1", tags=["knowledge"])
+_parse_pool = ThreadPoolExecutor(max_workers=2)
 
 
 # ── Pydantic schemas ──
@@ -60,44 +66,6 @@ def _note_out(n: Note) -> dict:
 
 # ── FILE IMPORT / PARSING ──
 
-def _parse_docx(data: bytes) -> str:
-    from docx import Document
-    doc = Document(io.BytesIO(data))
-    return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
-
-def _parse_pptx(data: bytes) -> str:
-    from pptx import Presentation
-    prs = Presentation(io.BytesIO(data))
-    lines: list[str] = []
-    for i, slide in enumerate(prs.slides, 1):
-        lines.append(f"\n## 幻灯片 {i}\n")
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                for para in shape.text_frame.paragraphs:
-                    t = para.text.strip()
-                    if t:
-                        lines.append(t)
-    return "\n".join(lines)
-
-def _parse_pdf(data: bytes) -> str:
-    import pdfplumber
-    lines: list[str] = []
-    with pdfplumber.open(io.BytesIO(data)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                lines.append(text)
-    return "\n\n".join(lines)
-
-def _parse_html(raw: str) -> str:
-    from bs4 import BeautifulSoup
-    soup = BeautifulSoup(raw, "html.parser")
-    for tag in soup(["script", "style", "nav", "footer", "header"]):
-        tag.decompose()
-    return soup.get_text("\n", strip=True)
-
-SUPPORTED_EXTENSIONS = {".md", ".txt", ".docx", ".pptx", ".pdf", ".html", ".htm"}
-
 @router.post("/knowledge/import")
 async def import_file(
     file: UploadFile = File(...),
@@ -107,27 +75,24 @@ async def import_file(
     if ext not in SUPPORTED_EXTENSIONS:
         raise HTTPException(400, f"不支持的格式: {ext}。支持: {', '.join(sorted(SUPPORTED_EXTENSIONS))}")
 
-    data = await file.read()
+    max_upload_size = 50 * 1024 * 1024
+    data = await file.read(max_upload_size + 1)
     size = len(data)
-    if size > 50 * 1024 * 1024:
+    if size > max_upload_size:
         raise HTTPException(413, "文件过大（最大 50MB）")
 
     try:
-        if ext in (".md", ".txt"):
-            content = data.decode("utf-8", errors="replace")
-        elif ext == ".docx":
-            content = _parse_docx(data)
-        elif ext == ".pptx":
-            content = _parse_pptx(data)
-        elif ext == ".pdf":
-            content = _parse_pdf(data)
-        elif ext in (".html", ".htm"):
-            raw = data.decode("utf-8", errors="replace")
-            content = _parse_html(raw)
-        else:
-            content = data.decode("utf-8", errors="replace")
-    except Exception as e:
-        raise HTTPException(400, f"解析失败: {str(e)[:200]}")
+        loop = asyncio.get_running_loop()
+        content = await loop.run_in_executor(
+            _parse_pool,
+            parse_document_isolated,
+            file.filename or "",
+            data,
+        )
+    except TimeoutError as exc:
+        raise HTTPException(408, "文档解析超时") from exc
+    except Exception as exc:
+        raise HTTPException(400, "解析失败，请确认文件未损坏且格式正确") from exc
 
     title = os.path.splitext(file.filename)[0]
     return {"title": title, "content": content[:50000], "size": size}
@@ -262,7 +227,11 @@ def ingest_raw(
         source_url=body.source_url, content_hash=h,
     )
     db.add(src)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "内容已存在，hash=" + h) from exc
     db.refresh(src)
     return {
         "id": src.id, "title": src.title, "content_hash": h,
@@ -357,29 +326,6 @@ class ChatMessage(BaseModel):
     file_path: str | None = None
 
 
-def _build_chat_messages(body: ChatMessage, db: Session, user_id: int) -> list[dict]:
-    """构造发给 LLM 的 messages 列表，注入知识库上下文"""
-    system_parts = ["你是个人知识管理助手。用中文回复，简洁准确。"]
-    notes = db.execute(
-        select(Note).where(Note.owner_id == user_id).order_by(Note.updated_at.desc()).limit(20)
-    ).scalars().all()
-    if notes:
-        ctx = "\n".join(f"- [{n.title}] {n.content[:300]}" for n in notes)
-        system_parts.append(f"参考知识库片段：\n{ctx}")
-    system = "\n\n".join(system_parts)
-    user = body.message
-    if body.file_content:
-        user = f"文件: {body.file_path or '未知'}\n```\n{body.file_content[:5000]}\n```\n\n{body.message}"
-    return [
-        {"role": "system", "content": system},
-        {"role": "user", "content": user},
-    ]
-
-
-def _sse_chunk(token: str) -> str:
-    return f"data: {json.dumps({'token': token})}\n\n"
-
-
 @router.post("/knowledge/chat")
 def chat_with_knowledge(
     body: ChatMessage,
@@ -391,9 +337,19 @@ def chat_with_knowledge(
         raise HTTPException(400, "请在模型设置中配置 API Key")
 
     mc = body.provider_config
-    client = OpenAI(base_url=mc["baseUrl"], api_key=mc["apiKey"])
+    try:
+        base_url = validate_base_url(mc.get("baseUrl", ""), get_settings().llm_allowed_base_urls)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    client = OpenAI(base_url=base_url, api_key=mc["apiKey"])
 
-    messages = _build_chat_messages(body, db, current_user.id)
+    messages = build_chat_messages(
+        body.message,
+        db,
+        current_user.id,
+        body.file_content,
+        body.file_path,
+    )
 
     try:
         stream = client.chat.completions.create(
@@ -409,10 +365,10 @@ def chat_with_knowledge(
                 for chunk in stream:
                     delta = chunk.choices[0].delta
                     if delta.content:
-                        yield _sse_chunk(delta.content)
+                        yield sse_chunk(delta.content)
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception:
-                yield _sse_chunk("\n\n[流中断]")
+                yield sse_chunk("\n\n[流中断]")
                 yield f"data: {json.dumps({'done': True})}\n\n"
 
         return StreamingResponse(
@@ -424,8 +380,8 @@ def chat_with_knowledge(
                 "X-Accel-Buffering": "no",
             },
         )
-    except Exception as e:
-        msg = str(e)
+    except Exception as exc:
+        msg = str(exc)
         if "401" in msg or "auth" in msg.lower():
             raise HTTPException(401, "API Key 无效或被拒绝")
-        raise HTTPException(500, f"LLM 调用失败: {msg[:200]}")
+        raise HTTPException(502, "模型服务暂时不可用") from exc

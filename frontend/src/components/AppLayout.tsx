@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Dropdown } from "antd";
 import { useContext } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ThemeSwitch } from "@lobehub/ui";
@@ -96,6 +97,7 @@ function FloatingAdd() {
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
   const { themeMode, setThemeMode } = useContext(ThemeModeContext);
   const isDark = themeMode === "dark";
@@ -151,7 +153,7 @@ export default function AppLayout() {
                     icon: <LogoutOutlined />,
                     label: "退出登录",
                     danger: true,
-                    onClick: () => { logout(); navigate("/login"); },
+                    onClick: () => { queryClient.clear(); logout(); navigate("/login"); },
                   },
                 ],
               }}

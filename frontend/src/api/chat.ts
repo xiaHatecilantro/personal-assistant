@@ -1,4 +1,5 @@
 import type { ModelConfig } from "../store/modelStore";
+import { useAuthStore } from "../store/authStore";
 
 export interface ChatOptions {
   modelConfig?: ModelConfig;
@@ -34,6 +35,7 @@ export async function* streamChat(
   });
 
   if (!response.ok) {
+    if (response.status === 401) useAuthStore.getState().logout();
     const err = await response.text();
     throw new Error(err || `HTTP ${response.status}`);
   }

@@ -57,6 +57,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
+生产环境必须设置 `APP_ENV=production` 和强随机 `JWT_SECRET_KEY`。AI 对话只会访问
+`LLM_ALLOWED_BASE_URLS` 中列出的地址；如需本地 Ollama，请显式把
+`http://localhost:11434/v1` 加入该变量。
+
 ### 3. 启动前端
 
 ```bash
@@ -115,6 +119,31 @@ docker compose up -d --build
 | 认证 | JWT (bcrypt + python-jose) |
 | AI | OpenAI SDK 兼容（DeepSeek / OpenAI / Ollama） |
 | 部署 | Docker Compose + Nginx |
+
+## 工程化约定
+
+- API 业务路由统一位于 `/api/v1`，健康检查使用 `/health/live` 和 `/health/ready`。
+- Alembic 负责数据库结构变更；不要修改已发布迁移，应新增版本文件。
+- 后端配置集中在 `backend/app/settings.py`，敏感配置只通过环境变量提供。
+- 前端服务端状态使用 TanStack Query，本地 UI 状态使用 Zustand；密码和模型 API Key
+  不持久化到 `localStorage`。
+- 文件解析与 LLM 上下文构造位于 `backend/app/services/`，Router 只处理 HTTP 编排。
+
+提交前运行：
+
+```bash
+# 后端
+cd backend
+pip install -r requirements-dev.txt
+ruff check app tests alembic
+pytest
+
+# 前端
+cd frontend
+npm run check
+```
+
+GitHub Actions 会在 MySQL 8 上验证 Alembic 迁移，并执行后端测试、前端 Lint 与生产构建。
 
 ## 许可证
 
