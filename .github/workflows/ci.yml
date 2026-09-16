@@ -20,9 +20,23 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agent
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: agent_checkpoints
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U agent -d agent_checkpoints"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
     env:
       APP_ENV: test
       DATABASE_URL: mysql+pymysql://root:test-password@127.0.0.1:3306/personal_assistant?charset=utf8mb4
+      CHECKPOINT_DATABASE_URL: postgresql://agent:test-password@127.0.0.1:5432/agent_checkpoints
       JWT_SECRET_KEY: ci-secret-key
     defaults:
       run:

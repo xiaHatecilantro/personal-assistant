@@ -25,4 +25,5 @@ while True:
 PY
 
 alembic upgrade head
+python -m app.agent.checkpoint
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000

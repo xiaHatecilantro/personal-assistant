@@ -1,3 +1,5 @@
+# 后端配置设置
+
 import os
 from dataclasses import dataclass
 from functools import lru_cache
@@ -38,6 +40,12 @@ class Settings:
     cors_origins: tuple[str, ...]
     llm_allowed_base_urls: tuple[str, ...]
     file_allowed_roots: tuple[str, ...]
+    checkpoint_database_url: str
+    agent_model_base_url: str
+    agent_model_name: str
+    agent_model_api_key: str
+    agent_max_steps: int
+    agent_run_timeout_seconds: int
 
     @property
     def is_production(self) -> bool:
@@ -75,6 +83,18 @@ def get_settings() -> Settings:
             for root in os.getenv("FILE_ALLOWED_ROOTS", "").split(os.pathsep)
             if root.strip()
         ),
+        checkpoint_database_url=os.getenv(
+            "CHECKPOINT_DATABASE_URL",
+            "postgresql://agent:agent@localhost:5433/agent_checkpoints",
+        ).strip(),
+        agent_model_base_url=os.getenv(
+            "AGENT_MODEL_BASE_URL",
+            "https://api.deepseek.com/v1",
+        ).strip(),
+        agent_model_name=os.getenv("AGENT_MODEL_NAME", "deepseek-chat").strip(),
+        agent_model_api_key=os.getenv("AGENT_MODEL_API_KEY", "").strip(),
+        agent_max_steps=int(os.getenv("AGENT_MAX_STEPS", "12")),
+        agent_run_timeout_seconds=int(os.getenv("AGENT_RUN_TIMEOUT_SECONDS", "300")),
     )
     if settings.app_env not in {"development", "test", "production"}:
         raise RuntimeError("APP_ENV must be development, test, or production")
@@ -84,4 +104,8 @@ def get_settings() -> Settings:
         raise RuntimeError("JWT_SECRET_KEY must contain at least 32 characters in production")
     if settings.jwt_expire_minutes <= 0:
         raise RuntimeError("JWT_EXPIRE_MINUTES must be greater than zero")
+    if settings.agent_max_steps <= 0:
+        raise RuntimeError("AGENT_MAX_STEPS must be greater than zero")
+    if settings.agent_run_timeout_seconds <= 0:
+        raise RuntimeError("AGENT_RUN_TIMEOUT_SECONDS must be greater than zero")
     return settings

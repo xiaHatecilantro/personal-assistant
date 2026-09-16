@@ -48,12 +48,34 @@ docker run -d \
   mysql:8.0
 ```
 
+Agent 运行状态使用独立的 PostgreSQL Checkpoint 数据库。本地开发可单独启动：
+
+```bash
+docker run -d \
+  --name pa-agent-checkpoint-db \
+  -e POSTGRES_USER=agent \
+  -e POSTGRES_PASSWORD=changeme \
+  -e POSTGRES_DB=agent_checkpoints \
+  -p 127.0.0.1:5433:5432 \
+  postgres:16-alpine
+```
+
+并在 `backend/.env` 中配置：
+
+```env
+CHECKPOINT_DATABASE_URL=postgresql://agent:changeme@localhost:5433/agent_checkpoints
+```
+
+LangGraph Checkpointer 的内部表由后端初始化流程调用官方 `setup()` 创建，
+不通过业务数据库的 Alembic 迁移管理。
+
 ### 2. 启动后端
 
 ```bash
 cd backend
 cp .env.example .env
 pip install -r requirements.txt
+python -m app.agent.checkpoint
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -79,6 +101,7 @@ npm run dev
 ├── backend/
 │   └── app/
 │       ├── main.py           # FastAPI 入口
+│       ├── agent/            # Agent 运行时与 PostgreSQL Checkpoint
 │       ├── config.py         # 数据库配置
 │       ├── models.py         # SQLAlchemy 模型
 │       ├── auth.py           # JWT 认证
@@ -98,7 +121,7 @@ npm run dev
 ## 部署
 
 ```bash
-cp .env.example .env       # 填写 DB_PASSWORD / JWT_SECRET_KEY
+cp .env.example .env       # 填写数据库密码、Checkpoint URL 和 JWT_SECRET_KEY
 docker compose up -d --build
 # 前端 → http://localhost
 # API 文档 → http://localhost:8000/docs
@@ -115,7 +138,7 @@ docker compose up -d --build
 | 状态 | Zustand 5, TanStack Query 5 |
 | 图表 | Recharts |
 | 后端 | FastAPI, SQLAlchemy 2.0 |
-| 数据库 | MySQL 8.0 |
+| 数据库 | MySQL 8.0（业务数据），PostgreSQL 16（Agent Checkpoint） |
 | 认证 | JWT (bcrypt + python-jose) |
 | AI | OpenAI SDK 兼容（DeepSeek / OpenAI / Ollama） |
 | 部署 | Docker Compose + Nginx |
@@ -125,6 +148,7 @@ docker compose up -d --build
 - API 业务路由统一位于 `/api/v1`，健康检查使用 `/health/live` 和 `/health/ready`。
 - Alembic 负责数据库结构变更；不要修改已发布迁移，应新增版本文件。
 - 后端配置集中在 `backend/app/settings.py`，敏感配置只通过环境变量提供。
+- Checkpoint URL 中的密码必须进行 URL 编码，并与 PostgreSQL 容器使用的原始密码一致。
 - 前端服务端状态使用 TanStack Query，本地 UI 状态使用 Zustand；密码和模型 API Key
   不持久化到 `localStorage`。
 - 文件解析与 LLM 上下文构造位于 `backend/app/services/`，Router 只处理 HTTP 编排。
@@ -143,7 +167,8 @@ cd frontend
 npm run check
 ```
 
-GitHub Actions 会在 MySQL 8 上验证 Alembic 迁移，并执行后端测试、前端 Lint 与生产构建。
+GitHub Actions 会在 MySQL 8 上验证 Alembic 迁移，在 PostgreSQL 16 上验证 Agent
+Checkpoint 跨连接恢复，并执行后端测试、前端 Lint 与生产构建。
 
 ## 许可证
 

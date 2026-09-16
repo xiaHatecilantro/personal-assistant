@@ -1,6 +1,9 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "integration: tests that require explicitly configured external infrastructure",
+]
 
 [tool.ruff]
 target-version = "py311"

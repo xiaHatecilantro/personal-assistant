@@ -15,6 +15,23 @@ services:
       timeout: 5s
       retries: 10
 
+  agent-checkpoint-db:
+    image: postgres:16-alpine
+    container_name: pa-agent-checkpoint-db
+    environment:
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: ${CHECKPOINT_DB_PASSWORD:?Set CHECKPOINT_DB_PASSWORD in .env}
+      POSTGRES_DB: agent_checkpoints
+    volumes:
+      - agent-checkpoint-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agent -d agent_checkpoints"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build: ./backend
     container_name: pa-backend
@@ -26,6 +43,12 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
       FILE_ALLOWED_ROOTS: ${FILE_ALLOWED_ROOTS:-}
       LLM_ALLOWED_BASE_URLS: ${LLM_ALLOWED_BASE_URLS:-https://api.deepseek.com/v1,https://api.openai.com/v1}
+      CHECKPOINT_DATABASE_URL: ${CHECKPOINT_DATABASE_URL:?Set CHECKPOINT_DATABASE_URL in .env}
+      AGENT_MODEL_BASE_URL: ${AGENT_MODEL_BASE_URL:-https://api.deepseek.com/v1}
+      AGENT_MODEL_NAME: ${AGENT_MODEL_NAME:-deepseek-chat}
+      AGENT_MODEL_API_KEY: ${AGENT_MODEL_API_KEY:-}
+      AGENT_MAX_STEPS: ${AGENT_MAX_STEPS:-12}
+      AGENT_RUN_TIMEOUT_SECONDS: ${AGENT_RUN_TIMEOUT_SECONDS:-300}
     ports:
       - "8000:8000"
     healthcheck:
@@ -35,6 +58,8 @@ services:
       retries: 5
     depends_on:
       mysql:
+        condition: service_healthy
+      agent-checkpoint-db:
         condition: service_healthy
 
   frontend:
@@ -48,3 +73,4 @@ services:
 
 volumes:
   mysql-data:
+  agent-checkpoint-data:
