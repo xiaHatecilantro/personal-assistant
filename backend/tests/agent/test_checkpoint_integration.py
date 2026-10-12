@@ -1,6 +1,5 @@
 """PostgreSQL Checkpointer 的真实持久化闭环测试。"""
 
-import asyncio
 import os
 from contextlib import suppress
 from typing import TypedDict
@@ -10,6 +9,8 @@ import pytest
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.graph import END, START, StateGraph
+
+from tests.agent.asyncio_utils import run_async
 
 
 class CheckpointState(TypedDict):
@@ -22,7 +23,7 @@ def test_postgres_checkpointer_restores_state_for_the_same_thread() -> None:
     if not checkpoint_database_url:
         pytest.skip("CHECKPOINT_DATABASE_URL is not configured")
 
-    asyncio.run(_assert_checkpoint_round_trip(checkpoint_database_url))
+    run_async(_assert_checkpoint_round_trip(checkpoint_database_url))
 
 
 async def _assert_checkpoint_round_trip(checkpoint_database_url: str) -> None:

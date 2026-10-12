@@ -1,3 +1,5 @@
+/** 模块职责：以卡片墙呈现 experience 域笔记，并进入共用富文本编辑器。 */
+
 import {
   ClockCircleOutlined,
   PlusOutlined,

@@ -1,3 +1,9 @@
+"""受限的服务器文件浏览与文本读取接口。
+
+文件访问必须同时满足认证、配置根目录白名单、规范化路径、隐藏路径限制和资源上限；
+不能仅依赖前端传入的目录树，因为路径参数本身是不可信输入。
+"""
+
 import os
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,6 +25,7 @@ _pool = ThreadPoolExecutor(max_workers=2)
 
 
 def _is_allowed(abs_path: str) -> bool:
+    """解析真实绝对路径后判断其是否位于任一允许根目录，阻止 ``..`` 路径穿越。"""
     try:
         path = Path(abs_path).expanduser().resolve()
         for root in ALLOWED_ROOTS:
@@ -32,6 +39,7 @@ def _is_allowed(abs_path: str) -> bool:
 
 
 def _contains_hidden_path(abs_path: str) -> bool:
+    """拒绝路径任意层级中的隐藏段，解析失败时按不安全处理。"""
     try:
         return any(part.startswith(".") for part in Path(abs_path).resolve().parts)
     except (OSError, RuntimeError):
@@ -39,6 +47,7 @@ def _contains_hidden_path(abs_path: str) -> bool:
 
 
 def _build_tree(path: str, depth: int = 0) -> list[dict]:
+    """构建有深度和条目数上限的目录树，并跳过符号链接以避免逃逸白名单。"""
     if depth > MAX_DEPTH:
         return []
     items = []
@@ -111,6 +120,7 @@ def get_tree(
     path: str = Query(...),
     _current_user: User = Depends(get_current_user),
 ):
+    # 慢磁盘或网络挂载放在线程池中并设置超时，避免长期占用请求工作线程。
     abs_path = os.path.abspath(path)
     if not _is_allowed(abs_path):
         raise HTTPException(403, "无权访问该路径")

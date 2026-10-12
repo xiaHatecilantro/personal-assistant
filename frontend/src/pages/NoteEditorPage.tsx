@@ -1,3 +1,5 @@
+/** 模块职责：实现笔记富文本编辑、属性维护、选区格式化和创建/更新保存流程。 */
+
 import {
   ArrowLeftOutlined,
   SaveOutlined,
@@ -134,6 +136,7 @@ export default function NoteEditorPage() {
   const [lastSaved, setLastSaved] = useState("");
   const [propsOpen, setPropsOpen] = useState(false);
   const [currentBlockType, setCurrentBlockType] = useState<BlockType>("paragraph");
+  // contentEditable DOM 是编辑源；content 是保存/统计用的序列化快照，两者需显式同步。
   const editorRef = useRef<HTMLDivElement | null>(null);
   const selectionRangeRef = useRef<Range | null>(null);
   // 属性 state — 与 title/content 分离
@@ -236,6 +239,7 @@ export default function NoteEditorPage() {
     setContent(normalizeEditableHtml(editor.innerHTML, editor.textContent));
   }, []);
 
+  // 点击工具栏会使编辑器失焦，缓存 Range 后才能把格式命令应用到原始选区。
   const saveEditorSelection = useCallback(() => {
     const editor = editorRef.current;
     const selection = window.getSelection();

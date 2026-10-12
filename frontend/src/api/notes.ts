@@ -1,3 +1,5 @@
+/** 模块职责：封装笔记、知识摄入、文档导入及知识图谱相关 REST 接口。 */
+
 import client from "./client";
 import type { Note } from "../types/note";
 

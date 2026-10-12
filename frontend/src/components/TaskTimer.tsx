@@ -1,3 +1,5 @@
+/** 模块职责：展示每日任务计时，并在暂停、归零或倒计时结束时持久化累计秒数。 */
+
 import {
   CaretRightOutlined,
   PauseOutlined,
@@ -15,6 +17,7 @@ interface Props {
 
 export default function TaskTimer({ task }: Props) {
   const queryClient = useQueryClient();
+  // elapsed 始终表示历史累计秒数；倒计时仅以 preset - elapsed 计算展示剩余值。
   const [elapsed, setElapsed] = useState(task.timer_total_seconds || 0);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -76,6 +79,7 @@ export default function TaskTimer({ task }: Props) {
       e.stopPropagation();
       setRunning(false);
       stopInterval();
+      // 不逐秒写库；在明确暂停点保存累计值，降低请求频率且便于下次继续。
       timerMutation.mutate(elapsed);
     },
     [elapsed, stopInterval, timerMutation],

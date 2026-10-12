@@ -1,3 +1,5 @@
+/** 模块职责：管理模型端点选择；配置可持久化，但 API Key 只保留在当前内存会话。 */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -60,6 +62,7 @@ function clearPersistedApiKeys() {
   }
 }
 
+// 清理旧版本曾写入 localStorage 的密钥，防止升级后继续残留敏感数据。
 clearPersistedApiKeys();
 
 export const useModelStore = create<ModelState>()(
@@ -87,6 +90,7 @@ export const useModelStore = create<ModelState>()(
     }),
     {
       name: STORAGE_KEY,
+      // API Key 参与当前会话请求，但持久化和恢复两个方向都强制置空。
       partialize: (state) => ({
         ...state,
         models: state.models.map((model) => ({ ...model, apiKey: "" })),

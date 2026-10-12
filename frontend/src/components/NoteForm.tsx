@@ -1,3 +1,5 @@
+/** 模块职责：复用笔记元数据表单，并把初始值和规范化提交值连接到页面用例。 */
+
 import { Button, Form, Input, Select, Space, Switch } from "antd";
 import { useEffect } from "react";
 

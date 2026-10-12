@@ -1,3 +1,5 @@
+/** 模块职责：展示任务筛选条件并将交互同步到 Zustand 筛选状态。 */
+
 import { useFilterStore } from "../store/filterStore";
 
 type FilterState = ReturnType<typeof useFilterStore.getState>;

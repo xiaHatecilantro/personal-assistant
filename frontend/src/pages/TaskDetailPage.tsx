@@ -1,3 +1,5 @@
+/** 模块职责：加载、更新或删除单个任务，并同步长期任务的子任务集合。 */
+
 import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Popconfirm, Spin } from "antd";

@@ -1,3 +1,5 @@
+/** 模块职责：定义后端任务资源在前端使用的稳定类型。 */
+
 export interface Task {
   id: number;
   parent_id: number | null;

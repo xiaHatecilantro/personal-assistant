@@ -1,3 +1,9 @@
+"""不可信文档的资源受限解析。
+
+格式解析库运行在可终止的子进程中；压缩包规模、PDF 页数、提取字符数、并发数和执行时间
+分别设限，降低压缩炸弹、恶意文件和 CPU/内存耗尽对 API 主进程的影响。
+"""
+
 import io
 import multiprocessing
 import threading
@@ -17,6 +23,7 @@ _PARSE_SLOTS = threading.BoundedSemaphore(2)
 
 
 def _validate_ooxml_archive(data: bytes) -> None:
+    """在交给 Office 解析库前检查 ZIP 条目数、展开大小和压缩比。"""
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
             entries = archive.infolist()
@@ -38,6 +45,7 @@ def _validate_ooxml_archive(data: bytes) -> None:
 
 
 def _join_bounded(lines) -> str:
+    """边拼接边统计输出，避免解析完成后才发现文本已耗尽内存。"""
     result: list[str] = []
     length = 0
     for line in lines:
@@ -139,6 +147,7 @@ def _parse_worker(connection, filename: str, data: bytes) -> None:
 
 
 def _terminate_process(process) -> None:
+    """正常回收解析进程；超时后先 terminate，仍未退出再强制 kill。"""
     if not process.is_alive():
         process.join()
         return
@@ -150,7 +159,7 @@ def _terminate_process(process) -> None:
 
 
 def parse_document_isolated(filename: str, data: bytes, timeout: float = 20) -> str:
-    """Parse an untrusted document in a process that can be terminated on timeout."""
+    """在受并发限制、可超时终止的独立进程中解析不可信文档。"""
     with _PARSE_SLOTS:
         context = multiprocessing.get_context("spawn")
         receiver, sender = context.Pipe(duplex=False)

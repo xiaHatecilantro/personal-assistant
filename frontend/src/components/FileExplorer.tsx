@@ -1,3 +1,5 @@
+/** 模块职责：把浏览器文件夹选择结果组织成内存目录树，并向聊天页提供选中文件。 */
+
 import {
   CaretRightOutlined,
   CloseOutlined,
@@ -15,7 +17,7 @@ interface FSNode {
   path: string;
   type: "folder" | "file";
   children?: FSNode[];
-  file?: File; // for leaf nodes from webkitdirectory
+  file?: File; // File 是浏览器授权后的临时句柄，不能靠路径字符串重新访问本机文件。
 }
 
 interface Props {
@@ -40,7 +42,7 @@ function isBinary(name: string): boolean {
   return /\.(png|jpg|jpeg|gif|ico|exe|dll|zip|tar|gz|pdf|mp4|mp3|ttf|woff2?)$/i.test(name);
 }
 
-/** Build a folder tree from flat file list with webkitRelativePath */
+/** 将 webkitdirectory 返回的平面 File 列表重建为纯内存目录树。 */
 function buildTreeFromFiles(files: File[]): { rootName: string; nodes: FSNode[] } {
   const root = files[0]?.webkitRelativePath?.split("/")[0] || "files";
   const tree: FSNode[] = [];
@@ -160,6 +162,7 @@ export default function FileExplorer({ onSelectFile, activeFileName }: Props) {
   const { workspaces, activePath, addWorkspace, removeWorkspace, setActive } = useWorkspaceStore();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const folderInputRef = useRef<HTMLInputElement | null>(null);
+  // Zustand 只持久化工作区标签；真正的 File 对象只在本次页面生命周期保存在这里。
   const [treeMap, setTreeMap] = useState<Map<string, FSNode[]>>(new Map());
 
   // React 会剥离 webkitdirectory 属性，通过原生 DOM 属性写入

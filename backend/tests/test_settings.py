@@ -72,6 +72,21 @@ def test_settings_parse_agent_runtime_configuration(monkeypatch):
         get_settings.cache_clear()
 
 
+def test_settings_default_checkpoint_url_matches_ipv4_compose_binding(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "test")
+    monkeypatch.setenv("DATABASE_URL", "sqlite://")
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-secret")
+    monkeypatch.delenv("CHECKPOINT_DATABASE_URL", raising=False)
+    get_settings.cache_clear()
+
+    try:
+        assert get_settings().checkpoint_database_url == (
+            "postgresql://agent:agent@127.0.0.1:5433/agent_checkpoints"
+        )
+    finally:
+        get_settings.cache_clear()
+
+
 @pytest.mark.parametrize(
     ("environment_name", "invalid_value"),
     [

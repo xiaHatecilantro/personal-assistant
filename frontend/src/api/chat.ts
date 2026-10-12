@@ -1,3 +1,5 @@
+/** 模块职责：通过 Fetch 消费知识问答 SSE，并把增量 token 暴露为异步迭代器。 */
+
 import type { ModelConfig } from "../store/modelStore";
 import { useAuthStore } from "../store/authStore";
 
@@ -42,6 +44,7 @@ export async function* streamChat(
 
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
+  // 网络 chunk 不保证按 SSE 行边界切分，残缺行必须留到下一 chunk 再解析。
   let buffer = "";
 
   try {

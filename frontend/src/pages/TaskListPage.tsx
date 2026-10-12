@@ -1,3 +1,5 @@
+/** 模块职责：结合 React Query 服务端数据与 Zustand 筛选状态展示任务列表。 */
+
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Popconfirm, Segmented, Spin } from "antd";

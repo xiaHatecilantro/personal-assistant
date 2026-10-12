@@ -1,3 +1,9 @@
+"""知识笔记、原始材料摄入、文档导入和知识问答接口。
+
+持久化资源始终按当前用户隔离；上传文档视为不可信输入，在独立子进程中解析，模型地址
+则必须通过服务端白名单，避免文件解析器和代理请求成为服务器攻击入口。
+"""
+
 import asyncio
 import hashlib
 import json
@@ -71,6 +77,7 @@ async def import_file(
     file: UploadFile = File(...),
     _current_user: User = Depends(get_current_user),
 ):
+    # 入口先限制扩展名与压缩前大小，解析器内部还会限制解压规模、页数和输出字符数。
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in SUPPORTED_EXTENSIONS:
         raise HTTPException(400, f"不支持的格式: {ext}。支持: {', '.join(sorted(SUPPORTED_EXTENSIONS))}")
@@ -212,6 +219,7 @@ def ingest_raw(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # 应用层预查提供友好错误，数据库唯一约束处理并发请求下的最终竞争。
     h = hashlib.sha256(body.content.encode()).hexdigest()[:16]
     existing = db.execute(
         select(RawSource).where(

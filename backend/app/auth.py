@@ -1,3 +1,5 @@
+"""密码散列、JWT 签发以及 FastAPI 当前用户认证依赖。"""
+
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -18,6 +20,7 @@ security = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
+    """使用 bcrypt 的随机盐生成不可逆密码摘要。"""
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
@@ -26,6 +29,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(user_id: int) -> str:
+    """将用户主键写入标准 ``sub`` 声明，并由服务端控制过期时间。"""
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode({"sub": str(user_id), "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -34,6 +38,10 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
+    """统一完成 Bearer Token 校验和用户加载，供所有受保护路由复用。
+
+    Token 只证明签发时的身份；每次请求仍查询用户表，可立即阻止已删除的账号继续访问。
+    """
     if credentials is None:
         raise HTTPException(status_code=401, detail="请先登录")
     try:

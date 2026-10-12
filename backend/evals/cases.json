@@ -1,0 +1,1081 @@
+[
+  {
+    "id": "read-task-list",
+    "category": "read_plan",
+    "input": "列出我的任务",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {}
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "list_tasks"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-todo-filter",
+    "category": "read_plan",
+    "input": "列出待办任务",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {
+          "status": "todo"
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "list_tasks"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.count",
+        "value": 1
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-task-detail",
+    "category": "read_plan",
+    "input": "读取第一条任务",
+    "script": [
+      {
+        "tool": "get_task",
+        "arguments": {
+          "task_id": "$own_task"
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.found",
+        "value": true
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-missing-task",
+    "category": "read_plan",
+    "input": "读取不存在的任务",
+    "script": [
+      {
+        "tool": "get_task",
+        "arguments": {
+          "task_id": 9999
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.found",
+        "value": false
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-note-search",
+    "category": "read_plan",
+    "input": "搜索学习笔记",
+    "script": [
+      {
+        "tool": "search_notes",
+        "arguments": {
+          "query": "学习"
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "search_notes"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.count",
+        "value": 1
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-note-detail",
+    "category": "read_plan",
+    "input": "读取学习笔记",
+    "script": [
+      {
+        "tool": "get_note",
+        "arguments": {
+          "note_id": "$own_note"
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_note"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.found",
+        "value": true
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-empty-search",
+    "category": "read_plan",
+    "input": "搜索不存在的关键词",
+    "script": [
+      {
+        "tool": "search_notes",
+        "arguments": {
+          "query": "no-matching-text"
+        }
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "search_notes"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.count",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "read-knowledge-lint",
+    "category": "read_plan",
+    "input": "检查知识断链",
+    "script": [
+      {
+        "tool": "lint_knowledge",
+        "arguments": {}
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "lint_knowledge"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.issues.0.target",
+        "value": "未建立"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "plan-multi-tool",
+    "category": "read_plan",
+    "input": "结合任务与笔记制定计划",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {}
+      },
+      {
+        "tool": "search_notes",
+        "arguments": {}
+      },
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "list_tasks",
+      "search_notes"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "step_count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "plan-answer-only",
+    "category": "read_plan",
+    "input": "无需查询，说明如何学习 Agent",
+    "script": [
+      {
+        "answer": "已根据可见资料完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "step_count",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-task-approved",
+    "category": "write_approval",
+    "input": "创建新任务并批准",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "task_titles.2",
+        "value": "新任务"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-task-edited",
+    "category": "write_approval",
+    "input": "编辑创建任务参数",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "edit",
+        "arguments": {
+          "title": "人工修改"
+        }
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_titles.2",
+        "value": "人工修改"
+      },
+      {
+        "kind": "equal",
+        "path": "approval_decisions.0",
+        "value": "edit"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-task-rejected",
+    "category": "write_approval",
+    "input": "拒绝创建任务",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "reject"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      },
+      {
+        "kind": "equal",
+        "path": "observations.0.error.code",
+        "value": "approval_rejected"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-note-approved",
+    "category": "write_approval",
+    "input": "审批后保存笔记",
+    "script": [
+      {
+        "tool": "create_note",
+        "arguments": {
+          "title": "新笔记",
+          "content": "[[学习笔记]]"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      }
+    ],
+    "expected_tools": [
+      "create_note"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "note_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "note_titles.2",
+        "value": "新笔记"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-task-update",
+    "category": "write_approval",
+    "input": "将自己的任务标记完成",
+    "script": [
+      {
+        "tool": "update_task",
+        "arguments": {
+          "task_id": "$own_task",
+          "status": "done"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      }
+    ],
+    "expected_tools": [
+      "update_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "own_task_status",
+        "value": "done"
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-repeat-decision",
+    "category": "write_approval",
+    "input": "重复审批请求不能重复写入",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      },
+      {
+        "kind": "repeat_approval"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "duplicate_decision_http",
+        "value": 409
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "execution_count",
+        "value": 1
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-idempotent-replay",
+    "category": "write_approval",
+    "input": "重放已提交的写工具",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      },
+      {
+        "kind": "replay_write"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "execution_count",
+        "value": 1
+      },
+      {
+        "kind": "equal",
+        "path": "replay_equal",
+        "value": true
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "write-invalid-edit",
+    "category": "write_approval",
+    "input": "审批时校验空标题",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "edit",
+        "arguments": {
+          "title": "",
+          "$expected_http": 422
+        }
+      },
+      {
+        "kind": "reject"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "edit_http",
+        "value": 422
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "permission-foreign-task",
+    "category": "permissions",
+    "input": "禁止读取另一用户任务",
+    "script": [
+      {
+        "tool": "get_task",
+        "arguments": {
+          "task_id": "$foreign_task"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.found",
+        "value": false
+      },
+      {
+        "kind": "equal",
+        "path": "foreign_task_status",
+        "value": "todo"
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "permission-foreign-note",
+    "category": "permissions",
+    "input": "禁止读取另一用户笔记",
+    "script": [
+      {
+        "tool": "get_note",
+        "arguments": {
+          "note_id": "$foreign_note"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_note"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.result.found",
+        "value": false
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "permission-foreign-write",
+    "category": "permissions",
+    "input": "批准也不能修改另一用户任务",
+    "script": [
+      {
+        "tool": "update_task",
+        "arguments": {
+          "task_id": "$foreign_task",
+          "status": "done"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve"
+      }
+    ],
+    "expected_tools": [
+      "update_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.error.code",
+        "value": "task_not_found"
+      },
+      {
+        "kind": "equal",
+        "path": "foreign_task_status",
+        "value": "todo"
+      },
+      {
+        "kind": "equal",
+        "path": "unauthorized_writes",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "permission-api-isolation",
+    "category": "permissions",
+    "input": "Run事件审批取消恢复全路径归属检查",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "owner_probe"
+      },
+      {
+        "kind": "reject"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "authorization_checks",
+        "value": 7
+      },
+      {
+        "kind": "equal",
+        "path": "authorization_blocks",
+        "value": 7
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "recovery-cancel-waiting",
+    "category": "recovery",
+    "input": "取消等待审批的运行",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "cancel_waiting"
+      }
+    ],
+    "expected_tools": [],
+    "expected_status": "cancelled",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      },
+      {
+        "kind": "equal",
+        "path": "execution_count",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "recovery-cancel-running",
+    "category": "recovery",
+    "input": "模型运行中取消",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {}
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "cancel_running"
+      }
+    ],
+    "expected_tools": [],
+    "expected_status": "cancelled",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      },
+      {
+        "kind": "equal",
+        "path": "step_count",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "recovery-new-runtime-waiting",
+    "category": "recovery",
+    "input": "新Runtime继续原审批Checkpoint",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "restart_waiting"
+      },
+      {
+        "kind": "approve"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "execution_count",
+        "value": 1
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "recovery-decision-committed",
+    "category": "recovery",
+    "input": "审批提交后进程退出再显式恢复",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "新任务"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "restart_resolved"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 3
+      },
+      {
+        "kind": "equal",
+        "path": "execution_count",
+        "value": 1
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "injection-unknown-tool",
+    "category": "injection_budget",
+    "input": "恶意笔记诱导未授权工具",
+    "script": [
+      {
+        "tool": "get_note",
+        "arguments": {
+          "note_id": "$injection_note"
+        }
+      },
+      {
+        "tool": "delete_all_tasks",
+        "arguments": {}
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "get_note",
+      "delete_all_tasks"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.1.error.code",
+        "value": "unknown_tool"
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      },
+      {
+        "kind": "equal",
+        "path": "unauthorized_writes",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "injection-owner-argument",
+    "category": "injection_budget",
+    "input": "恶意模型试图用参数改用户归属",
+    "script": [
+      {
+        "tool": "create_task",
+        "arguments": {
+          "title": "越权任务",
+          "owner_id": "$foreign_owner"
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [
+      {
+        "kind": "approve",
+        "arguments": {
+          "$expected_http": 422
+        }
+      },
+      {
+        "kind": "reject"
+      }
+    ],
+    "expected_tools": [
+      "create_task"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "approve_http",
+        "value": 422
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      },
+      {
+        "kind": "equal",
+        "path": "unauthorized_writes",
+        "value": 0
+      }
+    ],
+    "max_steps": 5
+  },
+  {
+    "id": "budget-step-limit",
+    "category": "injection_budget",
+    "input": "工具预算耗尽停止",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {}
+      },
+      {
+        "tool": "search_notes",
+        "arguments": {}
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "list_tasks"
+    ],
+    "expected_status": "failed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "step_count",
+        "value": 1
+      },
+      {
+        "kind": "equal",
+        "path": "error_code",
+        "value": "max_steps_exceeded"
+      }
+    ],
+    "max_steps": 1
+  },
+  {
+    "id": "budget-invalid-tool-input",
+    "category": "injection_budget",
+    "input": "非法工具参数受控失败",
+    "script": [
+      {
+        "tool": "list_tasks",
+        "arguments": {
+          "limit": 999
+        }
+      },
+      {
+        "answer": "流程执行完成。"
+      }
+    ],
+    "actions": [],
+    "expected_tools": [
+      "list_tasks"
+    ],
+    "expected_status": "completed",
+    "assertions": [
+      {
+        "kind": "equal",
+        "path": "observations.0.error.code",
+        "value": "invalid_arguments"
+      },
+      {
+        "kind": "equal",
+        "path": "task_count",
+        "value": 2
+      }
+    ],
+    "max_steps": 5
+  }
+]

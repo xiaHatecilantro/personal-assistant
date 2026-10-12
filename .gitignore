@@ -2,9 +2,18 @@ node_modules
 dist
 venv
 .env
+.env.*
+!.env.example
 __pycache__
 *.pyc
 .vite
 .playwright-mcp
 .run/
 /*.png
+# 发布时排除运行产物和 Office 编辑锁，不删除开发者已有文件。
+.pytest_cache/
+.ruff_cache/
+*.db
+*.db-*
+*.sqlite*
+~$*

@@ -1,3 +1,5 @@
+"""任务 HTTP 接口的数据契约；在进入 ORM 前完成类型、枚举和数值边界校验。"""
+
 from datetime import date, datetime
 
 from pydantic import BaseModel, Field

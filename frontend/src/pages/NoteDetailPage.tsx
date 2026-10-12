@@ -1,3 +1,5 @@
+/** 模块职责：兼容旧笔记详情路由并承接编辑、删除、关联和蒸馏操作。 */
+
 import { ArrowLeftOutlined, DeleteOutlined, RobotOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Popconfirm, Spin, Tag, Typography } from "antd";

@@ -12,7 +12,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: test-password
-          MYSQL_DATABASE: personal_assistant
+          MYSQL_DATABASE: m10_acceptance
         ports:
           - 3306:3306
         options: >-
@@ -35,7 +35,9 @@ jobs:
           --health-retries=20
     env:
       APP_ENV: test
-      DATABASE_URL: mysql+pymysql://root:test-password@127.0.0.1:3306/personal_assistant?charset=utf8mb4
+      DATABASE_URL: mysql+pymysql://root:test-password@127.0.0.1:3306/m10_acceptance?charset=utf8mb4
+      # 并发与迁移往返测试仅允许此显式测试库，不能复用生产 URL。
+      MYSQL_TEST_DATABASE_URL: mysql+pymysql://root:test-password@127.0.0.1:3306/m10_acceptance?charset=utf8mb4
       CHECKPOINT_DATABASE_URL: postgresql://agent:test-password@127.0.0.1:5432/agent_checkpoints
       JWT_SECRET_KEY: ci-secret-key
     defaults:
@@ -51,9 +53,20 @@ jobs:
             backend/requirements.txt
             backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - run: ruff check app tests alembic
+      - run: ruff check app tests alembic evals
       - run: alembic upgrade head
       - run: pytest
+      # Fake Model 只替代供应商决策，实际执行 Graph/审批/工具；不需要外部 API Key。
+      - name: Agent evaluation gates
+        run: python -m evals --seed 0 --output ../.run/agent-evaluation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-evaluation
+          # 只上传明确指定的合成数据评测报告，不上传整个 .run 或环境文件。
+          path: .run/agent-evaluation.json
+          include-hidden-files: true
+          if-no-files-found: warn
 
   frontend:
     runs-on: ubuntu-latest
@@ -68,4 +81,5 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm exec vitest run
       - run: npm run check

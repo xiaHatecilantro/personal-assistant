@@ -1,4 +1,8 @@
-# 后端配置设置
+"""集中读取并校验后端运行配置。
+
+配置值只从环境变量和 ``backend/.env`` 进入应用，业务模块通过 ``get_settings``
+消费同一份不可变快照，避免各处自行解析环境变量而产生默认值漂移。
+"""
 
 import os
 from dataclasses import dataclass
@@ -13,6 +17,7 @@ DEFAULT_JWT_SECRET = "dev-secret-key-change-in-production"
 
 
 def _load_environment() -> None:
+    # 先加载后端专用文件，再允许启动目录中的 .env 补充尚未定义的变量。
     load_dotenv(BACKEND_DIR / ".env")
     load_dotenv()
 
@@ -54,6 +59,7 @@ class Settings:
 
 @lru_cache
 def get_settings() -> Settings:
+    """构造并缓存配置；首次访问时完成跨字段和生产环境安全校验。"""
     _load_environment()
     app_env = os.getenv("APP_ENV", "development").strip().lower()
     jwt_secret_key = os.getenv("JWT_SECRET_KEY", "").strip() or DEFAULT_JWT_SECRET
@@ -85,7 +91,7 @@ def get_settings() -> Settings:
         ),
         checkpoint_database_url=os.getenv(
             "CHECKPOINT_DATABASE_URL",
-            "postgresql://agent:agent@localhost:5433/agent_checkpoints",
+            "postgresql://agent:agent@127.0.0.1:5433/agent_checkpoints",
         ).strip(),
         agent_model_base_url=os.getenv(
             "AGENT_MODEL_BASE_URL",
@@ -98,6 +104,7 @@ def get_settings() -> Settings:
     )
     if settings.app_env not in {"development", "test", "production"}:
         raise RuntimeError("APP_ENV must be development, test, or production")
+    # 开发默认密钥只为降低本地启动门槛，生产环境必须显式覆盖且满足最低强度。
     if settings.is_production and (
         settings.jwt_secret_key == DEFAULT_JWT_SECRET or len(settings.jwt_secret_key) < 32
     ):

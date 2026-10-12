@@ -1,3 +1,5 @@
+"""知识库对话的模型地址校验、Prompt 组装和 SSE 编码工具。"""
+
 import json
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
@@ -21,6 +23,7 @@ def _url_identity(value: str) -> tuple[str, str, int | None, str]:
 
 
 def validate_base_url(base_url: str, allowed_base_urls: tuple[str, ...]) -> str:
+    """只允许服务端配置的完整模型端点，防止用户借代理能力发起 SSRF。"""
     requested = _url_identity(base_url)
     allowed = {_url_identity(value) for value in allowed_base_urls}
     if requested not in allowed:
@@ -35,6 +38,7 @@ def build_chat_messages(
     file_content: str | None = None,
     file_path: str | None = None,
 ) -> list[dict[str, str]]:
+    """仅加载当前用户的最近笔记，并限制上下文片段大小以控制 Prompt 预算。"""
     from sqlalchemy import select
 
     from app.models import Note

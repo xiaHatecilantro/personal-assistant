@@ -1,3 +1,5 @@
+/** 模块职责：保存跨页面认证会话，并统一登录落盘与退出清理。 */
+
 import { create } from "zustand";
 
 interface User {
