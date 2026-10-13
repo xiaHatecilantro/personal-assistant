@@ -1,3 +1,5 @@
+/** 模块职责：定义后端笔记资源在前端使用的稳定类型。 */
+
 export interface Note {
   id: number;
   owner_id: number;

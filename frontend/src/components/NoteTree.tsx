@@ -1,3 +1,5 @@
+/** 模块职责：按分类构建可折叠笔记树并向父组件报告选中项。 */
+
 import { FileTextOutlined, FolderOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { useState } from "react";

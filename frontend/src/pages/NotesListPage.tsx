@@ -1,3 +1,5 @@
+/** 模块职责：查询、筛选、导入和删除知识笔记，并展示内容摘要。 */
+
 import {
   DeleteOutlined,
   EditOutlined,

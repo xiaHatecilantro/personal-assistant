@@ -1,3 +1,5 @@
+/** 模块职责：通过 Portal 收集新笔记元数据，创建后跳转到完整编辑器。 */
+
 import { createPortal } from "react-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Form, Input, Select, Switch } from "antd";

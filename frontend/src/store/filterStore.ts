@@ -1,3 +1,5 @@
+/** 模块职责：保存任务列表的客户端筛选和分页状态，筛选变化时重置页码。 */
+
 import { create } from "zustand";
 
 interface FilterState {

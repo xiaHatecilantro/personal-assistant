@@ -1,3 +1,5 @@
+/* 全局样式入口：Tailwind、基础 reset、可访问性焦点和通用微交互。 */
+
 @import "tailwindcss";
 
 * {

@@ -1,3 +1,5 @@
+/** 模块职责：装配主题、React Query、路由、懒加载页面和认证路由边界。 */
+
 import { App as AntApp, ConfigProvider, Spin, theme } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +12,7 @@ import RequireAuth from "./components/RequireAuth";
 import { ThemeModeContext, type ThemeMode } from "./themeModeContext";
 
 const ChatPage = lazy(() => import("./pages/ChatPage"));
+const AgentPage = lazy(() => import("./pages/AgentPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ExperiencePage = lazy(() => import("./pages/ExperiencePage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -22,6 +25,7 @@ const TaskCreatePage = lazy(() => import("./pages/TaskCreatePage"));
 const TaskDetailPage = lazy(() => import("./pages/TaskDetailPage"));
 const TaskListPage = lazy(() => import("./pages/TaskListPage"));
 
+// React Query 负责服务端数据缓存；Zustand Store 只承担会话、筛选等客户端跨组件状态。
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -69,6 +73,8 @@ export default function App() {
                         <Route path="notes/:id/edit" element={<NoteEditorPage />} />
                         <Route path="experience" element={<ExperiencePage />} />
                         <Route path="chat" element={<ChatPage />} />
+                        <Route path="agent" element={<AgentPage />} />
+                        <Route path="agent/:runId" element={<AgentPage />} />
                       </Route>
                     </Route>
                     </Routes>

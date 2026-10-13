@@ -1,3 +1,5 @@
+"""注册、登录和当前用户查询接口；密码原文只在请求处理期间存在。"""
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -45,6 +47,7 @@ def register(body: RegisterBody, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(body: LoginBody, db: Session = Depends(get_db)):
+    # 用户不存在和密码错误返回同一响应，避免向攻击者泄露账号是否已注册。
     user = db.execute(
         select(User).where(User.username == body.username)
     ).scalar()

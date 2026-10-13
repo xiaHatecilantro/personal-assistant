@@ -1,1 +1,1 @@
-"""Application services used by the HTTP layer."""
+"""供 HTTP 路由调用的业务服务，隔离外部模型与不可信文档处理细节。"""

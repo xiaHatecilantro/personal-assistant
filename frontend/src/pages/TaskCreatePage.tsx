@@ -1,3 +1,5 @@
+/** 模块职责：创建父任务及其可选子任务，并刷新 React Query 任务缓存。 */
+
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button } from "antd";

@@ -1,3 +1,5 @@
+/** 模块职责：提交用户注册，并在成功后建立认证会话进入应用。 */
+
 import { ScheduleOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { App, Button, Form, Input, Typography } from "antd";

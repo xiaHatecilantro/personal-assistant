@@ -1,3 +1,5 @@
+/** 模块职责：复用任务编辑表单，协调任务类型字段和长期任务的子任务输入。 */
+
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Form, Input, InputNumber, Select, Space } from "antd";
 import { useEffect, useState } from "react";

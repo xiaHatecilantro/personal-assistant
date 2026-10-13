@@ -1,3 +1,5 @@
+/** 模块职责：封装任务 CRUD、统计和累计计时接口及其请求类型。 */
+
 import client from "./client";
 import type { Task } from "../types/task";
 

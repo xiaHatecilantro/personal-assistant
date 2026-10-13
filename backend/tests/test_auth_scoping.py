@@ -97,6 +97,17 @@ def test_file_roots_require_authentication():
     assert response.status_code == 401
 
 
+def test_agent_routes_are_registered_and_require_authentication():
+    assert "/api/v1/agent/runs" in client.get("/openapi.json").json()["paths"]
+
+    response = client.post(
+        "/api/v1/agent/runs",
+        json={"goal": "未认证请求不应启动 Agent"},
+    )
+
+    assert response.status_code == 401
+
+
 def test_health_endpoints_report_application_and_database_readiness():
     assert client.get("/health/live").json() == {"status": "ok"}
     assert client.get("/health/ready").json() == {"status": "ok"}

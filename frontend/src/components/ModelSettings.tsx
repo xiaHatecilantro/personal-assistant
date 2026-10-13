@@ -1,3 +1,5 @@
+/** 模块职责：编辑和切换模型配置；敏感 API Key 由 Store 保证不写入持久化存储。 */
+
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,

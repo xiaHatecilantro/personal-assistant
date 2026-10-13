@@ -1,3 +1,5 @@
+/** 模块职责：完成登录、可选用户名记忆、认证缓存更新和来源路由恢复。 */
+
 import { ScheduleOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Checkbox, Form, Input, Typography } from "antd";

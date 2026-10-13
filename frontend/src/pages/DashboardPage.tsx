@@ -1,3 +1,5 @@
+/** 模块职责：聚合任务概览、趋势和看板查询，构成登录后的首页仪表盘。 */
+
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "antd";
 import {

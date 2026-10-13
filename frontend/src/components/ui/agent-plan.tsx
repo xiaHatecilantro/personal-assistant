@@ -1,3 +1,5 @@
+/** 模块职责：按状态分组展示任务看板，并按需查询展开任务的子任务。 */
+
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";

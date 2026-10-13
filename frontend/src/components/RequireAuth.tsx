@@ -1,3 +1,5 @@
+/** 模块职责：保护嵌套路由，并通过服务端 /auth/me 复验本地 Token 对应的当前会话。 */
+
 import { useQuery } from "@tanstack/react-query";
 import { Spin } from "antd";
 import { useEffect } from "react";
@@ -9,6 +11,7 @@ import { useAuthStore } from "../store/authStore";
 export default function RequireAuth() {
   const location = useLocation();
   const { token, setAuth, logout } = useAuthStore();
+  // 本地存在 Token 只代表“可能已登录”；服务端复验用户仍存在且签名、有效期均合法。
   const session = useQuery({
     queryKey: ["auth", "me", token],
     queryFn: () => client.get("/auth/me") as Promise<{ id: number; username: string }>,

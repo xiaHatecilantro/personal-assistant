@@ -1,3 +1,5 @@
+"""核心业务表的 SQLAlchemy ORM 映射与数据库级完整性约束。"""
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -29,6 +31,8 @@ class User(Base):
 
 
 class Task(Base):
+    """用户任务；owner_id 是所有读取和写入必须遵守的租户隔离边界。"""
+
     __tablename__ = "tasks"
     __table_args__ = (
         CheckConstraint("timer_total_seconds >= 0", name="ck_tasks_timer_total_nonnegative"),
@@ -38,6 +42,8 @@ class Task(Base):
         ),
         Index("ix_tasks_owner_parent_created", "owner_id", "parent_id", "created_at"),
         Index("ix_tasks_owner_status", "owner_id", "status"),
+        # 独立支撑外键，避免历史迁移删除复合查询索引时触发 MySQL 1553。
+        Index("ix_tasks_owner_fk", "owner_id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -72,6 +78,8 @@ class Task(Base):
 
 
 class Note(Base):
+    """用户知识页；常用的 owner 组合查询由复合索引覆盖。"""
+
     __tablename__ = "notes"
     __table_args__ = (
         CheckConstraint(
@@ -81,6 +89,7 @@ class Note(Base):
         Index("ix_notes_owner_updated", "owner_id", "updated_at"),
         Index("ix_notes_owner_category", "owner_id", "category"),
         Index("ix_notes_owner_domain", "owner_id", "domain"),
+        Index("ix_notes_owner_fk", "owner_id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -99,10 +108,13 @@ class Note(Base):
 
 
 class RawSource(Base):
+    """待编译的原始材料；内容哈希在单个用户范围内唯一，避免重复摄入。"""
+
     __tablename__ = "raw_sources"
     __table_args__ = (
         UniqueConstraint("owner_id", "content_hash", name="uq_raw_sources_owner_hash"),
         Index("ix_raw_sources_owner_status", "owner_id", "status"),
+        Index("ix_raw_sources_owner_fk", "owner_id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -1,3 +1,5 @@
+/** 模块职责：持久化工作区显示信息；浏览器授予的 File 对象仅保存在组件内存中。 */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

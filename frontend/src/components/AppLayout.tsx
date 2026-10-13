@@ -1,3 +1,5 @@
+/** 模块职责：提供认证后页面的全局导航、主题开关、用户菜单和嵌套路由出口。 */
+
 import {
   BookOutlined,
   BulbOutlined,
@@ -5,6 +7,7 @@ import {
   DashboardOutlined,
   LogoutOutlined,
   MessageOutlined,
+  RobotOutlined,
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -22,6 +25,7 @@ import { ThemeModeContext } from "../themeModeContext";
 const tabs = [
   { path: "/", label: "首页", icon: DashboardOutlined },
   { path: "/chat", label: "对话", icon: MessageOutlined },
+  { path: "/agent", label: "Agent", icon: RobotOutlined },
   { path: "/notes", label: "知识库", icon: BookOutlined },
   { path: "/experience", label: "经验", icon: BulbOutlined },
   { path: "/tasks", label: "任务", icon: CheckSquareOutlined },
@@ -233,7 +237,7 @@ export default function AppLayout() {
                 alignItems: "center",
                 gap: 3,
                 textDecoration: "none",
-                minWidth: 56,
+                minWidth: 48,
               }}
             >
               <motion.div

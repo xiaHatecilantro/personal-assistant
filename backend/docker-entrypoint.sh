@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
+# MySQL 健康检查有明确超时，避免容器在数据库不可达时无限等待。
 python - <<'PY'
 import os
 import time
@@ -24,5 +25,7 @@ while True:
         time.sleep(2)
 PY
 
+# 业务表和 LangGraph Checkpoint 分属不同数据库，必须分别初始化后再接收流量。
 alembic upgrade head
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m app.agent.checkpoint
+exec python -m app.server --host 0.0.0.0 --port 8000

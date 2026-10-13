@@ -1,3 +1,5 @@
+/** 模块职责：提供列表与面板共用的空状态反馈。 */
+
 import { Typography } from "antd";
 import { motion } from "motion/react";
 

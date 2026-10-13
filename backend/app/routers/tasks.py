@@ -1,3 +1,9 @@
+"""任务 CRUD、统计与计时接口。
+
+所有查询和写入都以 ``current_user.id`` 为资源边界；单条资源不存在或不属于当前用户时
+统一返回 404，避免泄露其他用户资源的存在性。
+"""
+
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -66,6 +72,7 @@ def create_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # 子任务不能挂到其他用户的父任务下，否则会绕过 owner_id 的租户隔离。
     if body.parent_id is not None:
         parent = db.get(Task, body.parent_id)
         if not parent or parent.owner_id != current_user.id:

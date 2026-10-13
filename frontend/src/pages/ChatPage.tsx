@@ -1,3 +1,5 @@
+/** 模块职责：协调工作区文件、模型内存配置和 SSE 增量消息，组成知识问答工作台。 */
+
 import {
   DeleteOutlined,
   RobotOutlined,

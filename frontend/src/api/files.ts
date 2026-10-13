@@ -1,3 +1,5 @@
+/** 模块职责：声明服务器受限文件浏览接口的数据结构与请求函数。 */
+
 import client from "./client";
 
 export interface FileNode {
