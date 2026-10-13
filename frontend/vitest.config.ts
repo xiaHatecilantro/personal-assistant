@@ -7,7 +7,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: false,
-    pool: "vmThreads",
+    // 独立进程避免 Node 20 VM runner 对依赖 ESM 与动态导入的限制。
+    pool: "forks",
     maxWorkers: 1,
     fileParallelism: false,
   },

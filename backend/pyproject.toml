@@ -1,5 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# console-script 和 python -m 两种入口都从后端根目录解析项目模块。
+pythonpath = ["."]
 addopts = "-q"
 # 外部数据库等集成依赖必须显式配置，默认单元测试不隐式启动基础设施。
 markers = [
